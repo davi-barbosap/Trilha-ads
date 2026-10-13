@@ -1,0 +1,110 @@
+# Perfil de teste (imobiliária fictícia): exercita as regras do segmento imobiliário. O exemplo documentado é clientes/_exemplo (escola).
+# Clientes reais ficam no repositório privado trilha-clientes (ADR-004).
+versao: 1
+vigente_desde: 2026-10-01
+
+cliente:
+  id: _exemplo                    # igual ao nome da pasta
+  nome: Imobiliária Exemplo
+  segmento: imobiliario
+
+metrica_principal: lead_qualificado
+
+economia:
+  modelo_receita: comissao        # a receita é a comissão retida, não o valor do imóvel
+  valor_medio_bem: 450000
+  comissao_pct: 0.05
+  participacao_comissao: 0.5      # parte da comissão que fica com a imobiliária
+  margem_contribuicao: 0.5
+  pct_investivel: 0.5
+  taxa_fechamento: 0.01
+  taxa_qualificacao: 0.25
+  taxa_agendamento: 0.05
+  estimados: [taxa_fechamento, taxa_agendamento]   # vieram do playbook; trocar por dado próprio
+
+verba:
+  mensal_planejada: 8000
+  teto_mensal: 10000
+  moeda: BRL
+
+plataformas:
+  meta:
+    ad_account_id: "act_000000000000000"
+    pixel_id: "000000000000000"
+    page_id: "000000000000000"
+  google:
+    customer_id: "123-456-7890"
+    login_customer_id: "111-222-3333"
+
+crm:
+  tipo: kommo
+  subdominio: imobiliaria-exemplo
+  sla_primeiro_contato_min: 30    # do time comercial do cliente com o lead, em minutos de expediente
+  horario_comercial: { dias: [0, 1, 2, 3, 4, 5], inicio: 8, fim: 20, fuso_utc: -3 }   # 0 = segunda; plantão de sábado
+  dias_parado: 15                 # lead ativo sem movimentação há mais de 15 dias = parado
+  dias_base_velha: 30
+  baldes: [Imobiliária Exemplo]   # usuário da empresa: recebe leads, mas não é pessoa do time
+  gestores: []                    # aparecem no raio-x, fora da média e dos sinais por pessoa
+  origens:                        # apelidos de origem deste cliente, antes da regra geral
+    trilha-performance: Meta Ads
+  # Código do criativo no utm_content. O padrão é o da grade do Trilha-briefing (PT01, GB01…); este cliente
+  # nomeia os criativos v0, v1, v2… desde antes da grade, então o padrão dele é outro.
+  padrao_codigo: "v[0-9]+"
+  # Tags do Kommo lidas pelo raio-x (padrão em trilha/core/perfil.py, TagsCrm). Só declarar o que for diferente:
+  # tags: { comparecimento: [reunião-realizada], reativado: [lead reativado] }
+  # Papel de cada funil do Kommo. O "ganho" (142) muda de sentido: no Closer é venda, no SDR costuma ser
+  # reunião realizada. Conta com SDR + Closer:
+  #   - { pipeline_id: 1110, nome: SDR, papel: entrada, ganho_significa: comparecimento }
+  #   - { pipeline_id: 1111, nome: Closer, papel: fechamento }
+  #   - { pipeline_id: 1112, nome: Base importada, papel: base }   # fora de leads e CPL
+  funis:
+    - { pipeline_id: 1111, nome: Vendas, papel: fechamento }
+  mapa_eventos:                   # etapas padrão da Trilha (docs/raio-x-do-funil.md); 142 e 143 já são padrão
+    - { pipeline_id: 1111, status_id: 2222, evento: lead }
+    - { pipeline_id: 1111, status_id: 2223, evento: em_atendimento }
+    - { pipeline_id: 1111, status_id: 3333, evento: lead_qualificado }
+    - { pipeline_id: 1111, status_id: 4444, evento: agendamento }
+    - { pipeline_id: 1111, status_id: 4445, evento: comparecimento }
+    - { pipeline_id: 1111, status_id: 4446, evento: proposta }
+    # Etapas de saída que não são o 143 encerram o lead com motivo (senão viram "leads parados"):
+    - { pipeline_id: 1111, status_id: 5551, evento: perdido, motivo: Contato inválido }                       # Descartado
+    - { pipeline_id: 1111, status_id: 5552, evento: perdido, motivo: Não respondeu às tentativas de contato }  # Frio
+    - { pipeline_id: 1111, status_id: 5553, evento: reativado }
+  campos:
+    gclid: gclid
+    gbraid: gbraid
+    wbraid: wbraid
+    fbclid: fbclid
+    ctwa_clid: ctwa_clid
+    meta_lead_id: meta_lead_id
+    utm_source: utm_source
+    utm_campaign: utm_campaign
+    utm_content: utm_content
+    codigo_criativo: codigo_criativo
+    origem: Origem                # canal (Meta Ads, Google Ads, Não rastreado…); lido do lead ou do contato
+    motivo_perda: motivo_perda    # só se a conta não usar os motivos de perda nativos do Kommo
+
+conversao:
+  eventos_semana_aprendizado: 50
+  destinos:
+    lead:             { meta_event_name: Lead,             google_conversion_action_id: "900000001", valor: ponderado }
+    lead_qualificado: { meta_event_name: LeadQualificado,  google_conversion_action_id: "900000002", valor: ponderado }
+    agendamento:      { meta_event_name: Schedule,         google_conversion_action_id: "900000003", valor: ponderado }
+    comparecimento:   { meta_event_name: VisitaRealizada }
+    venda:            { meta_event_name: Purchase,         google_conversion_action_id: "900000004", valor: receita }
+    # em_atendimento, proposta e perdido: uso interno (raio-x do funil), sem destino
+
+# Freio de emergência: a única ação automática (ADR-006).
+freio:
+  modo: pausar                    # pausar | avisar
+  gasto_sem_lead_multiplo: 3      # pausa campanha que gastou 3× o CPL máximo desde o último lead
+  horas_rastreamento_quebrado: 6  # pausa campanha gastando há 6h sem nenhum evento de conversão
+
+# Agenda do material que o sistema deixa pronto na véspera (docs/modelo-operacional.md).
+operacao:
+  responsavel: Assessor responsável
+  faixa: performance              # essencial | performance | escala
+  dia_otimizacao: segunda         # dossiê de otimização na véspera
+  dia_relatorio: quinta           # números do relatório semanal na véspera
+  semana_reuniao: 1               # 1ª semana do mês
+  dia_reuniao: sexta              # pacote da reunião dois dias úteis antes

@@ -1,0 +1,38 @@
+# Exemplo de marca.yaml (núcleo §5.1). Dados fictícios.
+marca:
+  nome: Imobiliária Exemplo
+  segmento: imobiliario
+identidade_visual:
+  cores: { primaria: "#1F3A5F", secundaria: "#F2A541", apoio: ["#F7F7F7"] }
+  tipografia: { titulos: "Montserrat", texto: "Inter" }
+  logo: { arquivo: "assets/logo.svg", versoes: ["horizontal", "simbolo"] }
+  estilo_imagem: fotos reais dos imóveis e do bairro; sem banco de imagem genérico
+voz:
+  assinatura: marca_pessoa
+  nome_pessoa: Ana (corretora responsável)
+  abordagem: conversacional
+  pessoa_gramatical: eu
+  tom: [próximo, direto, sem gíria]
+  assim_sim:
+    - "Apartamento de 2 quartos a 600 m da estação Vila Madalena, com parcela a partir de R$ 2.100."
+  assim_nao:
+    - "O melhor imóvel da região!  # sem número, fato ou nome próprio"
+  termos_obrigatorios: []
+  termos_proibidos: ["imperdível", "oportunidade única"]
+atendimento:
+  sla_resposta: 30min
+  handoff: bot
+  canais: [WhatsApp, Instagram Direct]
+  horario_comercial: "seg–sex 9h–19h, sáb 9h–13h"
+regras_comerciais:
+  preco: { anuncio: parcela, whatsapp: nunca, landing: a_partir_de }
+  promessas_proibidas: ["aprovação garantida", "sem consulta ao SPC"]
+compliance:
+  registros_profissionais: ["CRECI 00000-J — rodapé da landing e legenda dos vídeos"]
+  categoria_especial_anuncio: null   # verificar regras vigentes de habitação por plataforma e país
+  avisos_legais: ["Imagens ilustrativas."]
+  lgpd: { base_legal: consentimento, politica_privacidade_url: "https://exemplo.com.br/privacidade" }
+prova_social:
+  depoimentos_video: []
+  depoimentos_texto: []
+  numeros: ["+300 famílias atendidas desde 2015 (fonte: CRM)"]

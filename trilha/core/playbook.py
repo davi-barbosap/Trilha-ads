@@ -13,8 +13,9 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from trilha.core.oferta import ITENS_ADERENCIA
 from trilha.core.perfil import Etapa
 
 CategoriaPerda = Literal["lead", "atendimento", "comercial", "externo", "duplicado"]
@@ -32,6 +33,19 @@ class Playbook(BaseModel):
     taxas_referencia: dict[Etapa, Fracao] = Field(default_factory=dict)
     motivos_perda: dict[str, CategoriaPerda] = Field(default_factory=dict)
     perguntas_aderencia: list[str] = Field(default_factory=list)
+    # itens do diagnóstico de aderência que contam como pendência (oferta.ITENS_ADERENCIA); vazio = todos
+    aderencia_exige: list[str] = Field(default_factory=list)
+
+    @field_validator("aderencia_exige")
+    @classmethod
+    def _itens_conhecidos(cls, v: list[str]) -> list[str]:
+        fora = [x for x in v if x not in ITENS_ADERENCIA]
+        if fora:
+            raise ValueError(f"itens de aderência que não existem: {fora} (use: {', '.join(ITENS_ADERENCIA)})")
+        return v
+
+    def exige_na_aderencia(self) -> list[str]:
+        return self.aderencia_exige or list(ITENS_ADERENCIA)
 
     def rotulo(self, etapa: str) -> str:
         return self.rotulos_etapas.get(etapa, etapa.replace("_", " "))

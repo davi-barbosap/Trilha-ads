@@ -65,3 +65,12 @@ perguntas_aderencia:
   - Qual o histórico da construtora (entrega no prazo, reclamações)? A reputação é um ativo ou um obstáculo?
   - Como estão as vendas do empreendimento no plantão, no corpo a corpo e na indicação?
   - É alto padrão? Alto padrão raramente converte via tráfego frio.
+
+# Imóvel pode ser moradia ou investimento, e o fluxo de pagamento direto com a construtora é argumento de venda.
+aderencia_exige:
+  - perfil_compradores
+  - finalidade
+  - pagamento_flexivel
+  - reputacao
+  - vendas_fora_do_digital
+  - aderencia_digital

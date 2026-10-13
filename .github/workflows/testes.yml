@@ -15,4 +15,6 @@ jobs:
       - run: pip install -e .
       - run: python -m unittest discover -s tests -v
       - run: python -m trilha validar clientes/_exemplo/perfil.yaml
+      - run: python -m trilha validar tests/fixtures/clientes/_exemplo/perfil.yaml
+      - run: python -m trilha calcular clientes/_exemplo/perfil.yaml
       - run: python -c "import json,glob;[json.load(open(f)) for f in glob.glob('n8n/**/*.json', recursive=True)]"

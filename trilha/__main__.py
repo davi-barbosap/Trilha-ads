@@ -64,10 +64,13 @@ def cmd_validar(args) -> int:
 
         c = carregar_correcoes(correcoes)
         print(f"Correções confirmadas: {len(c.excluir)} exclusão(ões), {len(c.data_da_venda)} data(s) de venda corrigida(s)")
+    from trilha.core.playbook import carregar_playbook
+
+    exige = carregar_playbook(perfil.cliente.segmento).exige_na_aderencia()
     for arquivo in sorted((Path(args.perfil).resolve().parent / "ofertas").glob("*.yaml")):
         oferta = carregar_oferta(arquivo)
         print(f"Oferta '{oferta.oferta.nome}': OK")
-        if pendencias := oferta.aderencia.pendencias():
+        if pendencias := oferta.aderencia.pendencias(exige):
             print("  Diagnóstico de aderência pendente: " + ", ".join(pendencias))
         for sinal in oferta.aderencia.sinais_de_risco():
             print(f"  Sinal de risco: {sinal}")

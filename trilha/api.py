@@ -197,12 +197,13 @@ class TrilhaApi:
         p = self._perfil(dados, aceita_inline=True)
         ofertas = []
         if "cliente_id" in dados and "perfil" not in dados:
+            exige = carregar_playbook(p.cliente.segmento).exige_na_aderencia()
             for arquivo in sorted((self.clientes_dir / p.cliente.id / "ofertas").glob("*.yaml")):
                 try:
                     o = carregar_oferta(arquivo)
                 except (ValidationError, yaml.YAMLError) as e:
                     raise ErroHttp(422, f"oferta {arquivo.name} inválida: {e}") from e
-                ofertas.append({"oferta": o.oferta.nome, "aderencia_pendente": o.aderencia.pendencias(),
+                ofertas.append({"oferta": o.oferta.nome, "aderencia_pendente": o.aderencia.pendencias(exige),
                                 "sinais_de_risco": o.aderencia.sinais_de_risco()})
         return {"ok": True, "cliente": p.cliente.id, "versao": p.versao, "estimados": p.economia.estimados,
                 "ofertas": ofertas}

@@ -1,0 +1,34 @@
+# gerado pelo trilha-briefing a partir de clientes/_exemplo/ — edite lá, não aqui
+oferta:
+  nome: Aula experimental
+  tipo: aula gratuita
+aderencia:
+  perfil_compradores: ''
+  reputacao: nao_avaliado
+  reputacao_nota: ''
+  vendas_fora_do_digital:
+    canais: []
+    ritmo: ''
+    avaliacao: nao_avaliado
+  aderencia_digital: alta
+  justificativa: isca já usada com conversão de 1 em 3 que comparecem
+diferenciais:
+- Aula real, com turma
+- Sem compromisso
+- Presencial ou online
+raridade: ''
+condicoes_comerciais: {}
+objecoes:
+- eixo: confianca
+  objecao: Vão me empurrar matrícula
+  resposta_do_time: A conversa com a coordenação só acontece se você pedir.
+- eixo: nivel
+  objecao: Meu inglês é muito ruim
+  resposta_do_time: O nivelamento coloca você numa turma do seu ritmo.
+- eixo: tempo
+  objecao: Não tenho tempo agora
+  resposta_do_time: São 60 minutos, no horário que você escolher.
+perfil_lead:
+  perfil: 'Profissional travado: 28–40 anos, analista ou coordenador, entende inglês escrito mas trava para falar em reunião;
+    Viajante adiado: 35–55 anos, quer viajar sozinho ou visitar filho fora e tem vergonha de depender de alguém'
+  jornada_media_dias: 12

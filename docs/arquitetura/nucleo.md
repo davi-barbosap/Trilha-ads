@@ -126,6 +126,8 @@ O plano de cada cliente é decidido no Trilha-briefing (estratégia e marcos). A
 
 Antes de anunciar, o assessor responde as perguntas de aderência do playbook (`perguntas_aderencia`) e registra as respostas no bloco `aderencia` da oferta (§5.2): quem comprou até agora, uso próprio ou investimento, flexibilidade de pagamento, reputação de quem entrega, como estão as vendas fora do digital e a avaliação final de aderência ao digital.
 
+O que conta como pendência depende do segmento (`aderencia_exige` no playbook). O padrão exige a parte que vale para qualquer produto: quem comprou, reputação, vendas fora do digital e a avaliação final. O imobiliário acrescenta a finalidade (moradia ou investimento) e a flexibilidade de pagamento.
+
 - O sistema não avalia: confere se o diagnóstico foi feito (`python -m trilha validar` lista as pendências) e leva os sinais de risco para o dossiê e para o pacote de briefing.
 - Produto com vendas fracas fora do digital: o digital tende a expor o problema mais rápido e mais caro. Pede nutrição mais longa, prova social mais robusta e contorno de objeção já no criativo.
 - No imobiliário, alto padrão raramente converte via tráfego frio.
@@ -236,7 +238,7 @@ oferta:
   localizacao: { bairro: "", cidade_uf: "", regiao: "" }   # quando aplicável
 aderencia:                          # diagnóstico antes de anunciar (§3.5) — respostas do assessor
   perfil_compradores: ""            # perfil financeiro, onde moram, o que fazem, o que motivou a compra
-  finalidade: ""                    # uso_proprio | investimento | ambos
+  finalidade: ""                    # uso_proprio | investimento | ambos (exigida no imobiliário)
   pagamento_flexivel: null          # true | false
   pagamento_comunicavel: ""
   reputacao: ""                     # ativo | neutra | obstaculo

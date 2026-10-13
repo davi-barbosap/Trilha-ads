@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from trilha.core.perfil import Perfil, carregar_perfil
 
-EXEMPLO = Path(__file__).resolve().parents[1] / "clientes" / "_exemplo" / "perfil.yaml"
+EXEMPLO = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "clientes" / "_exemplo" / "perfil.yaml"
 
 
 class TestPerfil(unittest.TestCase):

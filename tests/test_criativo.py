@@ -21,7 +21,7 @@ T0 = datetime(2026, 9, 1, 9, tzinfo=timezone.utc)
 PB = carregar_playbook("padrao")
 RAIZ = Path(__file__).resolve().parents[1]
 FIX = RAIZ / "tests" / "fixtures"
-PERFIL = RAIZ / "clientes" / "_exemplo" / "perfil.yaml"
+PERFIL = RAIZ / "tests" / "fixtures" / "clientes" / "_exemplo" / "perfil.yaml"
 
 
 def lead(i, criativo=None, qualificado=False, venda=False, canal="Meta Ads"):
@@ -142,7 +142,7 @@ class TestCliEApi(unittest.TestCase):
 
     def test_api_aceita_gasto_por_codigo_e_recusa_formato_errado(self):
         from test_api import chamar
-        app = TrilhaApi(token="segredo", clientes_dir=RAIZ / "clientes")
+        app = TrilhaApi(token="segredo", clientes_dir=RAIZ / "tests" / "fixtures" / "clientes")
         leads = json.loads((FIX / "funil_leads.json").read_text(encoding="utf-8"))
         status, r = chamar(app, "POST", "/funil/raio-x", {"cliente_id": "_exemplo", "leads": leads, "investimento": 7550,
                                                           "gasto_por_codigo": {"v0": 1800}})

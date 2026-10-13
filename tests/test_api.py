@@ -33,7 +33,7 @@ class TestApi(unittest.TestCase):
             self.buscas.append(lead_id)
             return extrair_dados_lead(lead, [contato], perfil.crm.campos)
 
-        self.app = TrilhaApi(token="segredo", clientes_dir=RAIZ / "clientes", obter_dados=obter,
+        self.app = TrilhaApi(token="segredo", clientes_dir=RAIZ / "tests" / "fixtures" / "clientes", obter_dados=obter,
                              envio_real_permitido=False, segredos_webhook={"_exemplo": "wh-exemplo"})
 
     def test_saude_sem_token_e_autenticacao(self):
@@ -106,11 +106,11 @@ class TestApi(unittest.TestCase):
         import shutil, tempfile
         tmp = Path(tempfile.mkdtemp())
         try:
-            shutil.copytree(RAIZ / "clientes" / "_exemplo", tmp / "_exemplo")
-            shutil.copytree(RAIZ / "clientes" / "_exemplo", tmp / "imob-a")
+            shutil.copytree(RAIZ / "tests" / "fixtures" / "clientes" / "_exemplo", tmp / "_exemplo")
+            shutil.copytree(RAIZ / "tests" / "fixtures" / "clientes" / "_exemplo", tmp / "imob-a")
             perfil_a = tmp / "imob-a" / "perfil.yaml"
             perfil_a.write_text(perfil_a.read_text().replace("id: _exemplo", "id: imob-a"))
-            shutil.copytree(RAIZ / "clientes" / "_exemplo", tmp / "copiado-sem-ajustar")  # cliente.id errado
+            shutil.copytree(RAIZ / "tests" / "fixtures" / "clientes" / "_exemplo", tmp / "copiado-sem-ajustar")  # cliente.id errado
             (tmp / "quebrado").mkdir()
             (tmp / "quebrado" / "perfil.yaml").write_text("versao: 1\n")
             (tmp / "yaml-invalido").mkdir()

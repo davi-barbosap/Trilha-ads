@@ -2,6 +2,16 @@
 
 As versões anteriores estão descritas no histórico do Git.
 
+## 0.9.1 — um cliente fictício só (out/2026)
+
+- **O exemplo documentado** (`clientes/_exemplo/`) passa a ser a Escola Exemplo de Inglês, o mesmo cliente fictício do Trilha-briefing, do Trilha-copy e da Trilha-LP.
+  - **Origem:** `marca.yaml`, `ofertas/` e a parte de cima do `perfil.yaml` vêm do briefing (`exportar --para trilha`). A parte operacional (contas, Kommo, conversão, freio, operação) foi completada aqui.
+  - **Antes:** era uma imobiliária fictícia.
+- **A imobiliária fictícia** vai para `tests/fixtures/clientes/_exemplo/`. Os testes e os dados de funil e de webhook (que são de um cliente do imobiliário) usam ela, porque exercitam as regras do segmento.
+- **Diagnóstico de aderência por segmento:** a finalidade (uso próprio ou investimento) e a flexibilidade de pagamento apareciam como pendência para qualquer oferta, inclusive um curso.
+  - **Agora:** o playbook diz o que exige (`aderencia_exige`). O padrão exige a parte que vale para qualquer segmento, a mesma que o Trilha-briefing exporta. O imobiliário acrescenta as duas.
+  - **Onde aparece:** `validar` e a API (`aderencia_pendente`).
+
 ## 0.9.0 — caminho de volta para o briefing (out/2026)
 
 - **`raio-x … --retorno <pasta>`:** grava o retorno do período (`<inicio>_<fim>.yaml`, contrato `retorno` versão 1).

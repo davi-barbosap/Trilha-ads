@@ -179,7 +179,7 @@ Reativação de leads frios, nutrição, salesbots e as rotinas que aplicam tags
 
 ```bash
 python -m trilha simular-webhook tests/fixtures/kommo_webhook.txt \
-  --perfil clientes/_exemplo/perfil.yaml \
+  --perfil tests/fixtures/clientes/_exemplo/perfil.yaml \
   --lead tests/fixtures/kommo_lead.json
 ```
 

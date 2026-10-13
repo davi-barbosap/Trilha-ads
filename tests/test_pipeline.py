@@ -15,7 +15,7 @@ FIX = RAIZ / "tests" / "fixtures"
 
 class TestPipeline(unittest.TestCase):
     def setUp(self):
-        self.perfil = carregar_perfil(RAIZ / "clientes" / "_exemplo" / "perfil.yaml")
+        self.perfil = carregar_perfil(RAIZ / "tests" / "fixtures" / "clientes" / "_exemplo" / "perfil.yaml")
         lead = json.loads((FIX / "kommo_lead.json").read_text())
         contato = json.loads((FIX / "kommo_contato.json").read_text())
         self.dados = extrair_dados_lead(lead, [contato], self.perfil.crm.campos)

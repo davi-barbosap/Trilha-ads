@@ -37,7 +37,14 @@ motivos_perda:
 
 perguntas_aderencia:
   - Quem comprou até agora (perfil financeiro, onde mora, o que faz, o que motivou a compra)?
-  - O produto é para uso próprio ou investimento?
   - Que flexibilidade de pagamento existe e pode ser comunicada?
   - Qual a reputação da empresa (entrega no prazo, reclamações)? É um ativo ou um obstáculo?
   - Como estão as vendas fora do digital (presencial, indicação, ritmo de vendas)?
+
+# O que conta como pendência no diagnóstico de aderência (validar, API). É a parte que vale para qualquer
+# segmento — a mesma que o Trilha-briefing exporta. O playbook do segmento acrescenta o que for dele.
+aderencia_exige:
+  - perfil_compradores
+  - reputacao
+  - vendas_fora_do_digital
+  - aderencia_digital

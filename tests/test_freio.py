@@ -7,7 +7,7 @@ import yaml
 from trilha.core.freio import MetricaCampanha, avaliar
 from trilha.core.perfil import Perfil
 
-EXEMPLO = Path(__file__).resolve().parents[1] / "clientes" / "_exemplo" / "perfil.yaml"
+EXEMPLO = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "clientes" / "_exemplo" / "perfil.yaml"
 
 
 class TestFreio(unittest.TestCase):

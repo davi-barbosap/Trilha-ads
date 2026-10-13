@@ -6,6 +6,7 @@ os sinais de risco para o dossiê e para o pacote de briefing.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Literal
 
@@ -13,6 +14,17 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 Avaliacao = Literal["boa", "regular", "fraca", "nao_avaliado"]
+
+# Itens do diagnóstico de aderência e como aparecem quando faltam. O playbook do segmento diz quais exige
+# (aderencia_exige): finalidade, por exemplo, só faz sentido onde o produto pode ser investimento.
+ITENS_ADERENCIA = {
+    "perfil_compradores": "perfil dos compradores",
+    "finalidade": "finalidade (uso próprio ou investimento)",
+    "pagamento_flexivel": "flexibilidade de pagamento",
+    "reputacao": "reputação",
+    "vendas_fora_do_digital": "vendas fora do digital",
+    "aderencia_digital": "aderência ao digital (avaliação do assessor)",
+}
 
 
 class _Base(BaseModel):
@@ -54,21 +66,18 @@ class Aderencia(_Base):
     aderencia_digital: Literal["alta", "media", "baixa", "nao_avaliado"] = "nao_avaliado"
     justificativa: str = ""
 
-    def pendencias(self) -> list[str]:
-        faltando = []
-        if not self.perfil_compradores:
-            faltando.append("perfil dos compradores")
-        if self.finalidade == "nao_avaliado":
-            faltando.append("finalidade (uso próprio ou investimento)")
-        if self.pagamento_flexivel is None:
-            faltando.append("flexibilidade de pagamento")
-        if self.reputacao == "nao_avaliado":
-            faltando.append("reputação")
-        if self.vendas_fora_do_digital.avaliacao == "nao_avaliado":
-            faltando.append("vendas fora do digital")
-        if self.aderencia_digital == "nao_avaliado":
-            faltando.append("aderência ao digital (avaliação do assessor)")
-        return faltando
+    def pendencias(self, exige: Iterable[str] | None = None) -> list[str]:
+        """O que falta responder. `exige` vem do playbook do segmento (aderencia_exige); sem ele, tudo."""
+        exige = set(ITENS_ADERENCIA if exige is None else exige)
+        valores = {
+            "perfil_compradores": self.perfil_compradores or None,
+            "finalidade": None if self.finalidade == "nao_avaliado" else self.finalidade,
+            "pagamento_flexivel": self.pagamento_flexivel,
+            "reputacao": None if self.reputacao == "nao_avaliado" else self.reputacao,
+            "vendas_fora_do_digital": None if self.vendas_fora_do_digital.avaliacao == "nao_avaliado" else True,
+            "aderencia_digital": None if self.aderencia_digital == "nao_avaliado" else self.aderencia_digital,
+        }
+        return [rotulo for campo, rotulo in ITENS_ADERENCIA.items() if campo in exige and valores[campo] is None]
 
     def sinais_de_risco(self) -> list[str]:
         sinais = []

@@ -1,0 +1,40 @@
+# gerado pelo trilha-briefing a partir de clientes/_exemplo/ — edite lá, não aqui
+oferta:
+  nome: Inglês para falar no trabalho
+  tipo: curso
+aderencia:
+  perfil_compradores: analistas e coordenadores 28–40 anos, empresas com time fora do Brasil
+  reputacao: ativo
+  reputacao_nota: nota 4,9 no Google
+  vendas_fora_do_digital:
+    canais:
+    - indicação
+    - Google Meu Negócio
+    ritmo: ~20 matrículas/mês
+    avaliacao: boa
+  aderencia_digital: alta
+  justificativa: público ativo no digital, decisão em menos de 2 semanas, aula experimental como degrau
+diferenciais:
+- Turmas de até 6 alunos
+- Reposição em qualquer horário da grade
+- 'Aulas com situações do seu trabalho: reunião, apresentação, entrevista'
+- Presencial ou online, na mesma turma
+raridade: única escola da região com turma de até 6 e reposição livre
+condicoes_comerciais:
+  faixa_preco: R$ 420 a R$ 520 por mês
+  ticket_medio: 460.0
+  pagamento: mensalidade no cartão ou boleto
+  posicionamento_preco: acima de aplicativo, na média das escolas de rede
+objecoes:
+- eixo: tempo
+  objecao: Não tenho horário fixo
+  resposta_do_time: Você repõe em qualquer horário da grade, presencial ou online.
+- eixo: confianca
+  objecao: Já tentei e larguei
+  resposta_do_time: 'Turma de até 6: você fala em todas as aulas e o professor acompanha a sua evolução todo mês.'
+- eixo: preco
+  objecao: Aplicativo é mais barato
+  resposta_do_time: Aplicativo treina vocabulário; a reunião pede conversa ao vivo. Aqui é isso que você treina.
+perfil_lead:
+  perfil: 'Profissional travado: 28–40 anos, analista ou coordenador, entende inglês escrito mas trava para falar em reunião'
+  jornada_media_dias: 12

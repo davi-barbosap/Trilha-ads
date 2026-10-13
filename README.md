@@ -110,14 +110,15 @@ Marketing entregou: 425 leads · 120 qualificados · 50 agendamentos · R$ 62,92
 ```bash
 pip install -e .        # editável: o sistema lê os playbooks da pasta do repositório
 
-python -m trilha validar clientes/_exemplo/perfil.yaml      # confere a ficha de um cliente
+python -m trilha validar clientes/_exemplo/perfil.yaml      # confere a ficha de um cliente (a escola de exemplo)
 python -m trilha calcular clientes/_exemplo/perfil.yaml     # CAC, CPL máximos e verba por degrau
+# Os dados de funil e de webhook de tests/fixtures/ são de um cliente do imobiliário: use o perfil de teste dele
 python -m trilha raio-x tests/fixtures/funil_leads.json \
-  --perfil clientes/_exemplo/perfil.yaml --investimento 7550 # raio-x do funil
+  --perfil tests/fixtures/clientes/_exemplo/perfil.yaml --investimento 7550 # raio-x do funil
   # com --gasto-por-codigo gasto.json ({"v0": 1800, ...}), o raio-x por criativo mostra os custos
   # com --retorno ads/<id>/retornos [--inicio 2026-10-01 --fim 2026-10-31], grava o retorno para o briefing
 python -m trilha simular-webhook tests/fixtures/kommo_webhook.txt \
-  --perfil clientes/_exemplo/perfil.yaml \
+  --perfil tests/fixtures/clientes/_exemplo/perfil.yaml \
   --lead tests/fixtures/kommo_lead.json --contato tests/fixtures/kommo_contato.json   # o que seria enviado, sem enviar
 TRILHA_CLIENTES_DIR=../Trilha-clientes/ads python -m trilha servir --porta 8080      # API do n8n (exige TRILHA_API_TOKEN)
 ```
@@ -133,7 +134,9 @@ docs/              documentação
 n8n/modelos/       fluxos-modelo do n8n (W01, W10)
 infra/             servidor: Docker, n8n, Postgres, Redis, HTTPS, backup
 playbooks/         funil padrão (todos os segmentos) e padrões do imobiliário
-clientes/_exemplo/ ficha de cliente de exemplo; clientes reais ficam no Trilha-clientes
+clientes/_exemplo/ ficha do cliente de exemplo (Escola Exemplo de Inglês, o mesmo das outras ferramentas, gerada
+                   pelo briefing); clientes reais ficam no Trilha-clientes
+tests/fixtures/    dados de teste, inclusive o perfil de uma imobiliária fictícia (regras do segmento imobiliário)
 ```
 
 ## Documentação

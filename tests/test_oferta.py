@@ -4,19 +4,32 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from trilha.core.oferta import Aderencia, Oferta, carregar_oferta
-from trilha.core.playbook import carregar_playbook
+from trilha.core.playbook import Playbook, carregar_playbook
 
 RAIZ = Path(__file__).resolve().parents[1]
 
 
 class TestOferta(unittest.TestCase):
     def test_exemplo_valido_e_completo(self):
-        o = carregar_oferta(RAIZ / "clientes" / "_exemplo" / "ofertas" / "residencial-exemplo.yaml")
+        o = carregar_oferta(RAIZ / "tests" / "fixtures" / "clientes" / "_exemplo" / "ofertas" / "residencial-exemplo.yaml")
         self.assertEqual(o.aderencia.pendencias(), [])
         self.assertEqual(o.aderencia.sinais_de_risco(), [])
 
     def test_aderencia_em_branco_lista_pendencias(self):
         self.assertEqual(len(Aderencia().pendencias()), 6)
+
+    def test_pendencias_seguem_o_playbook_do_segmento(self):
+        # finalidade (uso próprio ou investimento) é pergunta de imóvel: num curso não vira pendência
+        escola = carregar_oferta(RAIZ / "clientes" / "_exemplo" / "ofertas" / "conversacao-adultos.yaml")
+        self.assertEqual(escola.aderencia.pendencias(carregar_playbook("educacao").exige_na_aderencia()), [])
+        self.assertIn("finalidade (uso próprio ou investimento)", Aderencia().pendencias(
+            carregar_playbook("imobiliario").exige_na_aderencia()))
+        self.assertNotIn("finalidade (uso próprio ou investimento)", Aderencia().pendencias(
+            carregar_playbook("padrao").exige_na_aderencia()))
+
+    def test_playbook_recusa_item_de_aderencia_que_nao_existe(self):
+        with self.assertRaises(ValidationError):
+            Playbook.model_validate({"segmento": "x", "aderencia_exige": ["perfil_comprador"]})
 
     def test_sinais_de_risco(self):
         a = Aderencia.model_validate({"vendas_fora_do_digital": {"avaliacao": "fraca"}, "aderencia_digital": "baixa",
