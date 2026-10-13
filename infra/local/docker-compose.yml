@@ -1,0 +1,68 @@
+# Ambiente local de desenvolvimento e teste: n8n + trilha-api, com as MESMAS variáveis da produção
+# (infra/docker-compose.yml), para que os fluxos de n8n/modelos/ rodem iguais nos dois lugares.
+#
+# Uso, na raiz do Trilha-ads (o .env local guarda os segredos; ver .env.example):
+#   docker compose -f infra/local/docker-compose.yml --env-file .env up -d --build
+# Túnel para o Kommo alcançar o n8n (opcional; abre um endereço público — ver docs/operacao/ambiente-local.md):
+#   docker compose -f infra/local/docker-compose.yml --env-file .env --profile tunel up -d
+#
+# Diferenças em relação à produção, de propósito: SQLite em vez de Postgres, sem fila (Redis/worker),
+# sem Caddy, portas só em 127.0.0.1 e execuções bem-sucedidas guardadas por 7 dias para depuração.
+
+name: trilha-local
+
+services:
+  n8n:
+    image: n8nio/n8n:${N8N_VERSION:?fixe N8N_VERSION no .env (nunca latest)}
+    restart: unless-stopped
+    ports: ["127.0.0.1:5678:5678"]
+    environment:
+      GENERIC_TIMEZONE: America/Sao_Paulo
+      TZ: America/Sao_Paulo
+      # URL pública (túnel) só para o n8n mostrar os endereços de webhook certos; vazio = localhost
+      WEBHOOK_URL: ${N8N_URL_PUBLICA:-http://localhost:5678/}
+      N8N_PROXY_HOPS: "1"
+      EXECUTIONS_DATA_SAVE_ON_SUCCESS: ${N8N_GUARDAR_SUCESSO:-all}
+      EXECUTIONS_DATA_SAVE_ON_ERROR: all
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: "168"
+      N8N_RUNNERS_ENABLED: "true"
+      # mesmo contrato da produção: $env só para configuração de baixo risco
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      TRILHA_API_URL: http://trilha-api:8080
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+    volumes:
+      # dados do n8n (fluxos, credenciais, chave de criptografia) na pasta do usuário: sobrevivem a apagar o contêiner
+      - type: bind
+        source: ${N8N_DADOS:?defina N8N_DADOS no .env com a pasta de dados do n8n}
+        target: /home/node/.n8n
+    depends_on:
+      trilha-api: { condition: service_healthy }
+
+  trilha-api:
+    build:
+      context: ../..
+      dockerfile: infra/Dockerfile
+    restart: unless-stopped
+    env_file: [../../.env]               # KOMMO_TOKEN_<CLIENTE>, KOMMO_WEBHOOK_TOKEN_<CLIENTE>, META_*, TRILHA_API_TOKEN…
+    environment:
+      TRILHA_CLIENTES_DIR: /clientes     # sobrescreve o caminho do Mac que está no .env
+      TRILHA_SIMULAR: ${TRILHA_SIMULAR:-1}
+      TRILHA_LOG_DIR: /logs
+    volumes:
+      - type: bind
+        source: ${TRILHA_CLIENTES_DIR:?defina TRILHA_CLIENTES_DIR no .env com a pasta clientes}
+        target: /clientes
+        read_only: true
+      - trilha_logs:/logs
+    # sem porta publicada: só o n8n fala com a API, pela rede interna do compose
+
+  tunel:
+    profiles: [tunel]
+    image: cloudflare/cloudflared:${CLOUDFLARED_VERSION:-2026.10.0}
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://n8n:5678
+    depends_on: [n8n]
+
+volumes:
+  trilha_logs:

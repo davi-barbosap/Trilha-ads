@@ -272,7 +272,7 @@ def raio_x(
     `gasto_por_codigo` ({"PT01": 1200.0}) é o gasto de cada código de criativo no período; com ele, o raio-x por
     criativo mostra os custos, e sem ele, só volumes e taxas.
     """
-    crm = crm or Crm(subdominio="-")
+    crm = crm or Crm(subdominio="sem-crm")  # raio-x sem perfil: só as regras padrão do CRM
     sla = sla_primeiro_contato_min if sla_primeiro_contato_min is not None else crm.sla_primeiro_contato_min
     dias_parado = dias_parado if dias_parado is not None else crm.dias_parado
     horario = crm.horario_comercial

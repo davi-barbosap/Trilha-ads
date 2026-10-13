@@ -34,6 +34,40 @@
       }
     },
     {
+      "id": "w01-filtro",
+      "name": "Lead novo ou mudança de etapa?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        200
+      ],
+      "notes": "O Kommo também manda 'lead alterado' (leads[update]) quando esse evento está marcado no webhook. A trilha-api ignoraria; aqui o fluxo nem a chama.",
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-etapa",
+              "leftValue": "={{ Object.keys($('Webhook Kommo').item.json.body || {}).some(k => k.startsWith('leads[status]') || k.startsWith('leads[add]')) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
       "id": "w01-api",
       "name": "trilha-api /conversao",
       "type": "n8n-nodes-base.httpRequest",
@@ -44,7 +78,7 @@
       ],
       "retryOnFail": true,
       "maxTries": 2,
-      "waitBetweenTries": 30000,
+      "waitBetweenTries": 5000,
       "parameters": {
         "method": "POST",
         "url": "={{ $env.TRILHA_API_URL }}/conversao",
@@ -57,7 +91,7 @@
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth"
       },
-      "notes": "A trilha-api confere o segredo do cliente (KOMMO_WEBHOOK_TOKEN_<CLIENTE>), a conta Kommo e a etapa real do lead. 403 aqui = tentativa recusada; o W10 avisa. Repetições são seguras: Meta deduplica por event_id e Google por orderId.",
+      "notes": "A trilha-api confere o segredo do cliente (KOMMO_WEBHOOK_TOKEN_<CLIENTE>), a conta Kommo e a etapa real do lead. 403 aqui = tentativa recusada; o W10 avisa. Repetições são seguras: Meta deduplica por event_id e Google por orderId. TRILHA_API_URL vem do ambiente do n8n (infra/docker-compose.yml e infra/local/docker-compose.yml).",
       "credentials": {
         "httpHeaderAuth": {
           "id": "DEFINIR_APOS_IMPORTAR",
@@ -84,18 +118,29 @@
           "conditions": [
             {
               "id": "cond-pulados",
-              "leftValue": "={{ $json.resumo.pulados.filter(p => !p.includes('uso interno')).length }}",
+              "leftValue": "={{ ($json.resumo && $json.resumo.pulados || []).filter(p => !p.includes('uso interno')).length }}",
               "rightValue": 0,
               "operator": {
                 "type": "number",
                 "operation": "gt"
+              }
+            },
+            {
+              "id": "cond-slack",
+              "leftValue": "={{ ($env.SLACK_WEBHOOK_URL || '').startsWith('https://') }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
               }
             }
           ],
           "combinator": "and"
         },
         "options": {}
-      }
+      },
+      "notes": "Avisa só se houver Slack configurado; sem ele, o resumo fica na execução (ambiente local guarda as bem-sucedidas)."
     },
     {
       "id": "w01-slack",
@@ -111,7 +156,7 @@
         "url": "={{ $env.SLACK_WEBHOOK_URL }}",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ text: `:warning: Conversão real — ${$json.cliente}: evento não enviado\\n• ` + $json.resumo.pulados.filter(p => !p.includes('uso interno')).join('\\n• ') }) }}",
+        "jsonBody": "={{ JSON.stringify({ text: `:warning: Conversão real — ${$json.cliente}: evento não enviado\\n• ` + ($json.resumo.pulados || []).filter(p => !p.includes('uso interno')).join('\\n• ') }) }}",
         "options": {}
       }
     }
@@ -132,7 +177,7 @@
       "main": [
         [
           {
-            "node": "trilha-api /conversao",
+            "node": "Lead novo ou mudança de etapa?",
             "type": "main",
             "index": 0
           }
@@ -161,13 +206,23 @@
         ],
         []
       ]
+    },
+    "Lead novo ou mudança de etapa?": {
+      "main": [
+        [
+          {
+            "node": "trilha-api /conversao",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
     }
   },
   "settings": {
     "executionOrder": "v1",
-    "saveDataSuccessExecution": "none",
     "saveDataErrorExecution": "all",
-    "saveManualExecutions": false,
     "errorWorkflow": "DEFINIR_ID_DO_W10_APOS_IMPORTAR"
   },
   "pinData": {}
