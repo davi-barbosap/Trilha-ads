@@ -19,14 +19,16 @@ O sistema entra em operação num cliente piloto, é testado na prática e depoi
 - ✅ trilha-api: `/saude`, `/clientes`, `/validar`, `/calcular`, `/conversao`, `/freio/avaliar`, `/funil/raio-x`, `/contas/saude`, com segredo de webhook por cliente
 - ✅ Fluxos-modelo do n8n: W01 (conversão real) e W10 (vigia de falhas), em `n8n/modelos/`; nenhum fluxo está importado num servidor
 - ✅ Infraestrutura descrita em `infra/` (n8n 2.x, Postgres, Redis, trilha-api, HTTPS, backup)
-- ✅ 96 testes e verificação automática no GitHub
+- ✅ Ambiente local igual à produção (`infra/local/`), importador de fluxos (`infra/n8n_importar.py`) e preparação do Kommo pelo próprio sistema (`kommo preparar` / `kommo conferir`)
+- ✅ W01 testado de ponta a ponta em 13/10/2026 num Kommo de teste: lead criado e movido → túnel → n8n → trilha-api → leitura do lead e confirmação da etapa → evento identificado (em simulação, sem pixel)
+- ✅ Testes automáticos (código, contratos e estrutura dos fluxos do n8n) e verificação no GitHub a cada push
 
 ## Para entrar em operação
 
 | # | Item | Material que passa a ficar pronto | Pronto quando | Status |
 |---|---|---|---|---|
 | 1 | **Servidor autohospedado** do n8n + **W10** vigia de falhas | — (base) | `/saude` responde; uma falha forçada chega no Slack; um backup é restaurado | 🟡 tudo escrito; falta o servidor |
-| 2 | **Kommo do piloto no padrão** (funis cadastrados com papel, funil padrão, motivos de perda nativos obrigatórios, responsável, campos de rastreamento) + **W01** conversão real (Meta) | todos | `lead_qualificado` aparece no Gerenciador de Eventos, primeiro com `META_TEST_EVENT_CODE`, depois em produção | 🟡 falta configurar o Kommo do piloto e importar o W01 |
+| 2 | **Kommo do piloto no padrão** (funis cadastrados com papel, funil padrão, motivos de perda nativos obrigatórios, responsável, campos de rastreamento) + **W01** conversão real (Meta) | todos | `lead_qualificado` aparece no Gerenciador de Eventos, primeiro com `META_TEST_EVENT_CODE`, depois em produção | 🟡 W01 validado num Kommo de teste (`kommo preparar` + importador); falta o Kommo do piloto e o pixel com `META_TEST_EVENT_CODE` |
 | 3 | Envio ao Google (Data Manager API) + **W02** coleta diária, incluindo o **histórico de etapas, o primeiro contato humano, as tarefas de reunião e as tags do Kommo** que alimentam o raio-x | dossiê, relatório | `validateOnly` aceito, depois envio real; raio-x do piloto gerado com dados reais às 05:30 | 🟡 payload e cálculo do raio-x prontos; falta a coleta |
 | 4 | **W03** urgências + freio + saúde das contas, **W04** pacing, **W05** leitura diária | monitoramento | uma pausa de teste com aviso e desfazer; leitura diária no Slack às 07:30 | 🟡 regra do freio pronta |
 | 5 | **W12** dossiê de otimização (com o raio-x da semana) + histórico de alterações | otimização semanal | o assessor faz a sessão do piloto só com o dossiê | ⬜ |
@@ -34,6 +36,7 @@ O sistema entra em operação num cliente piloto, é testado na prática e depoi
 | 7 | **W07** números do relatório semanal | relatório semanal | relatório do piloto na véspera, com marketing entregou × comercial converteu, perdas por categoria, criativos e ações | ⬜ |
 | 8 | **W08** pacote de dados do briefing | briefing de criativo | um briefing do piloto escrito sobre o pacote | ⬜ |
 | 9 | **W11** pacote da reunião + **W14** painel da carteira | reunião mensal, alinhamento com a equipe | uma reunião preparada em ≤ 15 min; painel na véspera da reunião de equipe | ⬜ |
+| 9b | **W15** entrada de leads das landing pages: recebe o POST da Trilha-LP e grava lead e contato no Kommo pela trilha-api (dado pessoal não passa por nós do n8n, ADR-002), com as UTMs e identificadores de clique | toda landing page | lead de teste da LP chega ao Kommo com UTMs, `gclid`/`fbclid`/`ttclid`, `landing_page` e telefone em E.164; o W01 dispara em seguida | ⬜ **bloqueia qualquer LP em campanha** |
 | 10 | Entrada dos demais clientes | tudo | perfis válidos em `/clientes`; material de todos chegando na véspera | ⬜ |
 
 ## Antes de operar, sem depender do n8n

@@ -171,19 +171,48 @@ class KommoClient:
         self.tentativas = tentativas
         self.timeout = timeout
 
-    def _get(self, caminho: str) -> dict:
+    def _requisicao(self, metodo: str, caminho: str, corpo=None) -> dict:
         req = urllib.request.Request(
-            self.base + caminho, headers={"Authorization": f"Bearer {self.token}", "Accept": "application/json"}
+            self.base + caminho, method=metodo,
+            data=json.dumps(corpo).encode() if corpo is not None else None,
+            headers={"Authorization": f"Bearer {self.token}", "Accept": "application/json",
+                     "Content-Type": "application/json"},
         )
         for tentativa in range(self.tentativas):
             try:
                 with urllib.request.urlopen(req, timeout=self.timeout) as r:
                     return json.loads(r.read() or b"{}")
             except urllib.error.HTTPError as e:
-                if e.code not in (429, 500, 502, 503, 504) or tentativa == self.tentativas - 1:
+                # só GET é repetido: repetir um POST que o Kommo talvez já tenha gravado criaria duplicatas
+                if metodo != "GET" or e.code not in (429, 500, 502, 503, 504) or tentativa == self.tentativas - 1:
                     raise
             time.sleep(2 ** (tentativa + 1))
         raise RuntimeError("inalcançável")
+
+    def _get(self, caminho: str) -> dict:
+        return self._requisicao("GET", caminho)
+
+    def listar(self, caminho: str, chave: str, opcional: bool = False) -> list[dict] | None:
+        """Todas as páginas de uma listagem da API v4. Com `opcional`, um 404 devolve None (recurso não exposto)."""
+        itens, pagina = [], 1
+        while True:
+            sep = "&" if "?" in caminho else "?"
+            try:
+                d = self._get(f"{caminho}{sep}page={pagina}&limit=250")
+            except urllib.error.HTTPError as e:
+                if opcional and e.code == 404:
+                    return None
+                raise
+            itens += (d.get("_embedded") or {}).get(chave, [])  # 204 (lista vazia) chega como {}
+            if "next" not in (d.get("_links") or {}):
+                return itens
+            pagina += 1
+
+    def criar(self, caminho: str, itens: list[dict]) -> dict:
+        return self._requisicao("POST", caminho, itens)
+
+    def conta(self) -> dict:
+        return self._get("/account")
 
     def buscar_lead(self, lead_id: int) -> dict:
         return self._get(f"/leads/{lead_id}?with=contacts,loss_reason")

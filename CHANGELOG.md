@@ -2,6 +2,24 @@
 
 As versões anteriores estão descritas no histórico do Git.
 
+## 0.10.0 — operação padronizada: ambiente local, Kommo e fluxos à prova de erro (out/2026)
+
+- **Ambiente local igual à produção** (`infra/local/docker-compose.yml`): n8n + trilha-api com as mesmas variáveis, para os fluxos de `n8n/modelos/` rodarem iguais nos dois lugares. Túnel opcional (`--profile tunel`). Guia e problemas conhecidos: `docs/operacao/ambiente-local.md`.
+- **`kommo conferir` e `kommo preparar`:** o próprio sistema confere e prepara a conta do Kommo do cliente.
+  - **Preparar:** cria o funil padrão com os nomes do playbook, os campos de rastreamento e os motivos de perda. Nunca altera nem apaga; rodar de novo não duplica. Imprime o `crm.mapa_eventos` com os IDs reais.
+  - **Conferir:** só leitura; sai com erro se faltar campo ou motivo, ou se o perfil apontar para funil ou etapa que não existe na conta.
+  - **Campos:** lista única em `trilha/integracoes/kommo_padrao.py`; entram `ttclid` e a origem `tiktok` (o site da Trilha vende TikTok Ads).
+- **`infra/n8n_importar.py`:** importa os fluxos-modelo por nome, liga a credencial da trilha-api e o fluxo de erro. Nunca ativa; avisa quando o W10 está inativo e quando um fluxo ativo ficou só como rascunho.
+- **W01:** descarta "lead alterado" antes de chamar a trilha-api; endereço da API por `$env.TRILHA_API_URL`; aviso no Slack só com Slack configurado; espera entre tentativas dentro do limite do n8n (5 s).
+- **W10:** não falha quando o Slack ainda não está configurado.
+- **Correções:**
+  - o perfil recusa `crm.subdominio` com o endereço inteiro (`https://…kommo.com`), que antes só falhava depois, como erro de rede;
+  - a pasta de logs da imagem nasce com o dono certo: antes, o registro de envios falharia por permissão depois de enviar ao Meta, e o n8n repetiria o envio;
+  - o compose de produção grava o registro de envios em volume próprio e passa `TRILHA_RESPONSAVEL_TECNICO`;
+  - versão única: `trilha/__init__.py` e `pyproject.toml` estavam diferentes (a `/saude` informava 0.8.0).
+- **`.env` local** lido pelo `python -m trilha` sem sobrescrever o ambiente.
+- **Documentação:** endereço certo do webhook (`/webhook/trilha-w01-kommo/kommo/<cliente>`), eventos a marcar no Kommo, importação dos fluxos, segmentos do site (`playbooks/README.md`) e a entrada de leads das landing pages (W15) como bloqueio no roadmap.
+
 ## 0.9.1 — um cliente fictício só (out/2026)
 
 - **O exemplo documentado** (`clientes/_exemplo/`) passa a ser a Escola Exemplo de Inglês, o mesmo cliente fictício do Trilha-briefing, do Trilha-copy e da Trilha-LP.

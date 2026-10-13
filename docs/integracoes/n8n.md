@@ -29,7 +29,7 @@ Cada fluxo é **um só para toda a carteira**: pede a lista de clientes à trilh
 
 | Fluxo | Serve a | Disparo | Faz | Status |
 |---|---|---|---|---|
-| **W01** Conversão real | base de tudo | webhook do Kommo `…/webhook/kommo/<cliente_id>?token=<segredo do cliente>` | responde 200 ao Kommo na hora; chama `/conversao`, que confere o segredo do cliente, a conta Kommo e a etapa real do lead; avisa no Slack se algo foi pulado | ✅ modelo (`n8n/modelos/w01-conversao-real.json`) |
+| **W01** Conversão real | base de tudo | webhook do Kommo `…/webhook/trilha-w01-kommo/kommo/<cliente_id>?token=<segredo do cliente>` | responde 200 ao Kommo na hora; descarta o que não é lead novo nem mudança de etapa; chama `/conversao`, que confere o segredo do cliente, a conta Kommo e a etapa real do lead; avisa no Slack se algo foi pulado | ✅ modelo (`n8n/modelos/w01-conversao-real.json`) |
 | **W02** Coleta | dossiê, relatório, pacotes | diário 05:00 | Meta Insights (por conjunto e anúncio, diário, `time_increment=1`, em janelas mensais por causa do erro de paginação #2642; status dos anúncios; objetivo da campanha para separar captação, topo de funil e clique para WhatsApp) + Google (GAQL por campanha e dia, `cost_micros` ÷ 1e6; o Performance Max não tem grupo de anúncios) + Kommo por cliente (leads, histórico de etapas, primeiro contato humano, tarefas de reunião, tags) → BigQuery; leads do período e vendas fechadas no período em todos os funis cadastrados; correções confirmadas do cliente aplicadas; falha alto em qualquer erro de qualquer fonte, trava de sanidade antes de gravar, data de coleta por fonte, nunca publica "zero" ([Kommo](kommo.md) §3.3) | ⬜ |
 | **W03** Urgências + freio | freio de emergência | a cada 2 h, 07–23 h, todos os dias | métricas do dia → `/freio/avaliar` → pausa (modo A) ou só avisa (modo B) → Slack com desfazer; também: gasto zerado, entrega parada, reprovação, conta desativada e saldo pré-pago para menos de 5 dias (`/contas/saude`) | ⬜ (regra pronta na API) |
 | **W04** Pacing | dossiê | diário 06:00 | projeção do gasto do mês × verba contratada | ⬜ |
@@ -37,7 +37,7 @@ Cada fluxo é **um só para toda a carteira**: pede a lista de clientes à trilh
 | **W06** Execução do aprovado | otimização semanal | gatilho do ClickUp (status → "Aprovado") | confere se a conta ainda está no estado "antes", executa a mudança simples aprovada, registra, comenta o resultado | ⬜ |
 | **W07** Relatório semanal | relatório ao cliente | véspera de `operacao.dia_relatorio`, 16:00 | números e gráficos em três blocos (leads · criativos · ações) → tarefa no ClickUp. **Não envia nada ao cliente.** | ⬜ |
 | **W08** Pacote de briefing | briefing de criativo | com o dossiê e sob demanda (status no ClickUp) | o que converte e o que cansou, objeções e motivos de perda, modelo de briefing pré-preenchido | ⬜ |
-| **W10** Vigia de falhas | todos | fluxo de erro global | toda falha vira aviso no Slack com etapa, erro e link da execução | ✅ modelo (`n8n/modelos/w10-vigia-de-falhas.json`) |
+| **W10** Vigia de falhas | todos | fluxo de erro global (**precisa estar ativo**: inativo, não recebe nenhuma falha) | toda falha vira aviso no Slack com etapa, erro e link da execução; sem `SLACK_WEBHOOK_URL`, fica registrada nas execuções | ✅ modelo (`n8n/modelos/w10-vigia-de-falhas.json`) |
 | **W11** Pacote da reunião | reunião mensal | 2 dias úteis antes da reunião | resultado × meta vigente, testes, decisões e efeito, números para a proposta → documento no ClickUp/Drive | ⬜ |
 | **W12** Dossiê de otimização | otimização semanal | véspera de `operacao.dia_otimizacao`, 16:00 | placar, mudanças, decisões anteriores e efeito, pontos de atenção com simulação, testes, freio, funil do cliente → tarefa no ClickUp | ⬜ |
 | **W14** Painel da carteira | alinhamento com a equipe | véspera da reunião de equipe | semáforo por cliente, saúde das contas (dias de saldo, recarga sugerida, anúncios com problema), leads parados numa janela fixa de 45 dias, freio da semana, tarefas atrasadas e criativos pendentes (ClickUp), tokens perto de vencer; confere o **conteúdo** de cada material e coleta, não só se o fluxo terminou (coleta com zero leads quando o período anterior teve, plataforma sem dado, material com mais de 7 dias); alertas técnicos para o responsável técnico, agrupados | ⬜ |
@@ -101,10 +101,24 @@ No n8n 2.x, `N8N_BLOCK_ENV_ACCESS_IN_NODE` vem como `true` (nós não leem vari�
 
 ## 7. Importar os fluxos-modelo
 
-1. Criar a credencial **Header Auth** "trilha-api" (`Authorization` = `Bearer <TRILHA_API_TOKEN>`).
-2. Importar `n8n/modelos/w10-vigia-de-falhas.json` primeiro; anotar o ID gerado.
-3. Importar `n8n/modelos/w01-conversao-real.json`; no nó "trilha-api /conversao", selecionar a credencial; em *Settings → Error workflow*, apontar para o W10 (o arquivo traz o marcador `DEFINIR_ID_DO_W10_APOS_IMPORTAR`).
-4. Para cada cliente: gerar um segredo longo e aleatório, gravar como `KOMMO_WEBHOOK_TOKEN_<CLIENTE>` em `infra/kommo.env` e cadastrar no Kommo dele o webhook `https://<dominio>/webhook/kommo/<cliente_id>?token=<segredo>` para lead criado e mudança de etapa.
-5. Testar com `TRILHA_SIMULAR=1`: mover um lead de teste e conferir a execução e a resposta da trilha-api.
+Os modelos de `n8n/modelos/` são a fonte da verdade. Nada é recriado à mão no editor: o importador cria ou atualiza cada fluxo pelo nome, liga a credencial da trilha-api pelo nome e aponta o fluxo de erro de todos para o W10.
 
-Depois do primeiro backup, os fluxos em produção aparecem em `n8n/fluxos/` (nomeados pelo nome do fluxo); `n8n/modelos/` continua sendo o ponto de partida para instalações novas. Os modelos seguem o formato de exportação do n8n, mas **ainda não foram importados numa instância real**: conferir tipo e versão de cada nó ao importar.
+```bash
+# na raiz do Trilha-ads, com N8N_API_URL, N8N_API_KEY e TRILHA_API_TOKEN no ambiente ou no .env
+python infra/n8n_importar.py             # plano
+python infra/n8n_importar.py --aplicar   # cria/atualiza; nunca ativa nem apaga
+```
+
+Depois da primeira importação, quem opera:
+1. **Ativa o W10.** Fluxo de erro inativo não recebe falha nenhuma; o importador avisa enquanto ele estiver inativo.
+2. **Ativa o W01.**
+3. Para cada cliente: gera um segredo longo e aleatório (`python -c "import secrets; print(secrets.token_urlsafe(32))"`), grava como `KOMMO_WEBHOOK_TOKEN_<CLIENTE>` e cadastra o webhook no Kommo dele ([Kommo](kommo.md) §4.1).
+4. Testa com `TRILHA_SIMULAR=1`: move um lead de teste e confere a execução e a resposta da trilha-api. Um webhook com segredo errado precisa terminar em erro **e** aparecer no W10.
+
+Regras que os modelos seguem (conferidas em `tests/test_fluxos_n8n.py`):
+- endereço da trilha-api por `$env.TRILHA_API_URL`, nunca fixo; token da trilha-api só em credencial;
+- `waitBetweenTries` até 5000 ms: o n8n ignora valores maiores sem avisar;
+- o modelo não força guardar execuções bem-sucedidas: quem decide é o ambiente (`EXECUTIONS_DATA_SAVE_ON_SUCCESS`, `none` em produção);
+- nó de aviso no Slack só dispara se `SLACK_WEBHOOK_URL` estiver definido.
+
+Os fluxos em produção são exportados todo dia para `n8n/fluxos/` (`infra/backup.sh`); mudança de fluxo entra primeiro no modelo, com teste, e depois é importada.

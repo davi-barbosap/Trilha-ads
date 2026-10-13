@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from trilha.core.atribuicao import PADRAO_CODIGO
 
@@ -193,6 +193,15 @@ class Crm(_Base):
         except re.error as e:
             raise ValueError(f"crm.padrao_codigo não é uma expressão regular válida: {e}") from e
         return self
+
+    @field_validator("subdominio")
+    @classmethod
+    def _so_o_subdominio(cls, v: str) -> str:
+        # erro comum: colar o endereço inteiro; a falha só apareceria depois, como erro de rede
+        v = v.strip()
+        if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,62}", v):
+            raise ValueError(f"use só o subdomínio, a parte antes de .kommo.com (ex.: 'minhaempresa'), não {v!r}")
+        return v
 
     def funil(self, pipeline_id: int | None) -> Funil | None:
         return next((f for f in self.funis if f.pipeline_id == pipeline_id), None)

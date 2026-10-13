@@ -121,6 +121,17 @@ python -m trilha simular-webhook tests/fixtures/kommo_webhook.txt \
   --perfil tests/fixtures/clientes/_exemplo/perfil.yaml \
   --lead tests/fixtures/kommo_lead.json --contato tests/fixtures/kommo_contato.json   # o que seria enviado, sem enviar
 TRILHA_CLIENTES_DIR=../Trilha-clientes/ads python -m trilha servir --porta 8080      # API do n8n (exige TRILHA_API_TOKEN)
+python -m trilha kommo conferir ../Trilha-clientes/ads/<id>/perfil.yaml   # Kommo do cliente no padrão? (só leitura)
+python -m trilha kommo preparar ../Trilha-clientes/ads/<id>/perfil.yaml   # cria funil, campos e motivos que faltam (--aplicar)
+```
+
+O `python -m trilha` lê o `.env` da pasta atual (segredos fora do Git; modelo em `.env.example`).
+
+Ambiente completo (n8n + trilha-api), igual à produção — guia em [ambiente local](docs/operacao/ambiente-local.md):
+
+```bash
+docker compose -f infra/local/docker-compose.yml --env-file .env up -d --build
+python infra/n8n_importar.py --aplicar      # fluxos de n8n/modelos/ para o n8n; nunca ativa nem apaga
 ```
 
 Clientes reais ficam no repositório privado Trilha-clientes, pasta `ads/<id>/` ([ADR-004](docs/decisoes/004-dados-de-clientes.md)). Segredos: copie `.env.example` para `.env` (uso local) ou `infra/.env.example` e `infra/kommo.env.example` (servidor). Nenhum `.env` é versionado.
@@ -149,6 +160,8 @@ tests/fixtures/    dados de teste, inclusive o perfil de uma imobiliária fictí
 | [raio-x do funil](docs/raio-x-do-funil.md) | funil padrão, perdas por categoria, maior vazamento, marketing × comercial |
 | [métricas](docs/metricas.md) | dicionário de métricas da Trilha: definição e fórmula de cada número |
 | [arquitetura](docs/arquitetura/) | núcleo, Meta Ads e Google Ads |
+| [ambiente local](docs/operacao/ambiente-local.md) | n8n + trilha-api + Kommo de teste iguais à produção, túnel e problemas conhecidos |
+| [segmentos](playbooks/README.md) | os segmentos que a Trilha atende e o que cada um precisa para ter playbook próprio |
 | [integrações](docs/integracoes/) | n8n, Kommo, ClickUp e demais ferramentas |
 | [decisões](docs/decisoes/) | por que as coisas são como são |
 | [mudanças](CHANGELOG.md) | o que mudou em cada versão |

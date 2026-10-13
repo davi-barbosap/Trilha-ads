@@ -44,6 +44,7 @@ from trilha.core.correcoes import aplicar_correcoes, carregar_correcoes
 from trilha.core.funil import LeadFunil, raio_x
 from trilha.core.oferta import carregar_oferta
 from trilha.core.playbook import carregar_playbook
+from trilha.ambiente import var_cliente
 from trilha.core.saude import ContaAnuncio, saude_do_cliente
 from trilha.core.perfil import Perfil, carregar_perfil
 from trilha.integracoes.kommo import DadosLead, KommoClient, subdominio_do_webhook
@@ -59,8 +60,7 @@ class ErroHttp(Exception):
         self.status = status
 
 
-def _var_cliente(prefixo: str, cliente_id: str) -> str:
-    return prefixo + cliente_id.upper().replace("-", "_")
+_var_cliente = var_cliente
 
 
 def _kommo_padrao(perfil: Perfil, lead_id: int) -> DadosLead:

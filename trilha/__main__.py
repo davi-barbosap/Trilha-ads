@@ -1,9 +1,13 @@
-"""CLI do Trilha: validar · calcular · raio-x · simular-webhook · servir."""
+"""CLI do Trilha: validar · calcular · raio-x · simular-webhook · kommo · servir.
+
+Lê o .env da pasta atual (ou o arquivo em TRILHA_ENV_FILE) sem sobrescrever o ambiente.
+"""
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from dataclasses import asdict
 from datetime import date
@@ -210,6 +214,116 @@ def cmd_simular_webhook(args) -> int:
     return 0
 
 
+def _cliente_kommo(perfil):
+    from trilha.ambiente import var_cliente
+    from trilha.integracoes.kommo import KommoClient
+
+    var = var_cliente("KOMMO_TOKEN_", perfil.cliente.id)
+    token = os.environ.get(var)
+    if not token:
+        raise SystemExit(f"Falta {var} no ambiente ou no .env (token de longa duração do Kommo de '{perfil.cliente.nome}').")
+    return KommoClient(perfil.crm.subdominio, token)
+
+
+def _erro_kommo(e) -> SystemExit:
+    import urllib.error
+
+    if isinstance(e, urllib.error.HTTPError):
+        dica = {401: "token inválido ou expirado", 402: "conta do Kommo sem plano ativo (teste vencido?)",
+                403: "integração sem permissão para este recurso", 404: "subdomínio errado ou recurso inexistente"}
+        return SystemExit(f"Kommo respondeu HTTP {e.code}: {dica.get(e.code, 'ver a documentação da API v4')}")
+    return SystemExit(f"Kommo inacessível: {getattr(e, 'reason', e)} (internet ou subdomínio)")
+
+
+def cmd_kommo_conferir(args) -> int:
+    """Confere se a conta do Kommo está no padrão que o perfil e o sistema esperam. Só leitura."""
+    import urllib.error
+
+    from trilha.core.playbook import carregar_playbook
+    from trilha.integracoes.kommo_padrao import CAMPOS_TEXTO, ler_estado
+
+    perfil = carregar_perfil(args.perfil)
+    cli = _cliente_kommo(perfil)
+    try:
+        conta = cli.conta()
+        estado = ler_estado(cli)
+    except (urllib.error.HTTPError, urllib.error.URLError) as e:
+        raise _erro_kommo(e)
+    problemas = []
+    print(f"Conta: {conta.get('name')} (subdomínio {conta.get('subdomain')}, id {conta.get('id')})")
+    if conta.get("subdomain") != perfil.crm.subdominio:
+        problemas.append(f"o token é da conta '{conta.get('subdomain')}', mas o perfil diz '{perfil.crm.subdominio}'")
+
+    etapas = {(f["id"], s["id"]): (f["name"], s["name"]) for f in estado.funis
+              for s in (f.get("_embedded") or {}).get("statuses", [])}
+    print(f"\nFunis: {', '.join(f['name'] for f in estado.funis)}")
+    for m in perfil.crm.mapa_eventos:
+        if m.pipeline_id is not None and (m.pipeline_id, m.status_id) not in etapas:
+            problemas.append(f"mapa_eventos: etapa {m.status_id} do funil {m.pipeline_id} ({m.evento}) não existe na conta")
+    ids_funis = {f["id"] for f in estado.funis}
+    for f in perfil.crm.funis:
+        if f.pipeline_id not in ids_funis:
+            problemas.append(f"crm.funis: funil {f.pipeline_id} ({f.nome}) não existe na conta")
+
+    nomes = {(c.get("name") or "").strip().lower() for c in estado.campos}
+    faltam = [c for c in (*CAMPOS_TEXTO, "origem") if c not in nomes]
+    for chave, nome in perfil.crm.campos.items():
+        if nome.strip().lower() not in nomes:
+            problemas.append(f"crm.campos.{chave}: campo '{nome}' não existe na conta")
+    print(f"Campos padrão que faltam: {', '.join(faltam) or 'nenhum'}")
+
+    if estado.motivos_perda is None:
+        print("Motivos de perda: a API não expõe nesta conta; conferir em Configurações")
+    else:
+        existentes = {m.get("name") for m in estado.motivos_perda}
+        sem = [m for m in carregar_playbook(perfil.cliente.segmento).motivos_perda if m not in existentes]
+        print(f"Motivos de perda do playbook que faltam: {', '.join(sem) or 'nenhum'}")
+        if sem:
+            problemas.append(f"{len(sem)} motivo(s) de perda do playbook ausentes")
+    if faltam:
+        problemas.append(f"{len(faltam)} campo(s) padrão ausentes (python -m trilha kommo preparar)")
+
+    print("\n" + ("Tudo no padrão." if not problemas else "Problemas:\n  - " + "\n  - ".join(problemas)))
+    return 1 if problemas else 0
+
+
+def cmd_kommo_preparar(args) -> int:
+    """Cria o que falta para o padrão da Trilha: funil, campos e motivos de perda. Nunca altera nem apaga."""
+    import urllib.error
+
+    import yaml
+
+    from trilha.core.playbook import carregar_playbook
+    from trilha.integracoes.kommo_padrao import aplicar, ler_estado, mapa_eventos, planejar
+
+    perfil = carregar_perfil(args.perfil)
+    playbook = carregar_playbook(perfil.cliente.segmento)
+    nome_funil = args.funil or f"Trilha – {perfil.cliente.nome}"
+    cli = _cliente_kommo(perfil)
+    try:
+        plano = planejar(ler_estado(cli), playbook, nome_funil)
+        print(f"Kommo {perfil.crm.subdominio} · playbook '{playbook.segmento}' · {'APLICAR' if args.aplicar else 'plano, nada é gravado'}")
+        print(f"  funil '{nome_funil}': {'criar' if plano.funil else 'já existe'}")
+        print(f"  campos a criar: {', '.join(c['name'] for c in plano.campos) or 'nenhum'}")
+        if plano.motivos_indisponiveis:
+            print("  motivos de perda: a API não expõe nesta conta; cadastrar em Configurações")
+        else:
+            print(f"  motivos de perda a criar: {len(plano.motivos_perda)}")
+        if args.aplicar and not plano.vazio:
+            aplicar(cli, plano)
+            print("Aplicado.")
+        funil = next((f for f in cli.listar("/leads/pipelines", "pipelines") if f["name"] == nome_funil), None)
+    except (urllib.error.HTTPError, urllib.error.URLError) as e:
+        raise _erro_kommo(e)
+    if funil:
+        mapa = mapa_eventos(funil, playbook)
+        print(f"\ncrm.mapa_eventos para o perfil.yaml (funil {funil['id']}):")
+        for m in mapa:
+            etapa = m.pop("_etapa")
+            print("  - " + yaml.safe_dump(m, default_flow_style=True, allow_unicode=True).strip() + f"   # {etapa}")
+    return 0
+
+
 def cmd_servir(args) -> int:
     from trilha.api import servir
 
@@ -248,11 +362,25 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--contato", action="append", help="JSON de contato (API v4); pode repetir")
     s.set_defaults(func=cmd_simular_webhook)
 
+    s = sub.add_parser("kommo", help="confere ou prepara a conta do Kommo de um cliente no padrão da Trilha")
+    k = s.add_subparsers(dest="acao", required=True)
+    c = k.add_parser("conferir", help="só leitura: conta, funis, mapa de eventos, campos e motivos de perda")
+    c.add_argument("perfil")
+    c.set_defaults(func=cmd_kommo_conferir)
+    c = k.add_parser("preparar", help="cria o que falta (funil padrão, campos, motivos); sem --aplicar só mostra o plano")
+    c.add_argument("perfil")
+    c.add_argument("--funil", help="nome do funil (padrão: 'Trilha – <nome do cliente>')")
+    c.add_argument("--aplicar", action="store_true", help="grava no Kommo")
+    c.set_defaults(func=cmd_kommo_preparar)
+
     s = sub.add_parser("servir", help="sobe a trilha-api (HTTP) usada pelos fluxos do n8n")
     s.add_argument("--host", default="0.0.0.0")
     s.add_argument("--porta", type=int, default=8080)
     s.set_defaults(func=cmd_servir)
 
+    from trilha.ambiente import carregar_env
+
+    carregar_env(os.environ.get("TRILHA_ENV_FILE", ".env"))
     args = p.parse_args(argv)
     try:
         return args.func(args)

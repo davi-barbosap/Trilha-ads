@@ -18,7 +18,8 @@ O Trilha cobre o que costuma faltar: **mapa etapa → evento padronizado por cli
 
 ```
 Kommo: lead criado ou mudou de etapa
-  → webhook para o n8n: https://<dominio>/webhook/kommo/<cliente_id>?token=<segredo DESTE cliente>
+  → webhook para o n8n: https://<dominio>/webhook/trilha-w01-kommo/kommo/<cliente_id>?token=<segredo DESTE cliente>
+  → W01 descarta o que não é lead novo nem mudança de etapa (ex.: "lead alterado") sem chamar a trilha-api
   → W01 responde 200 ao Kommo na hora (o Kommo não espera processamento)
   → W01 chama a trilha-api: POST /conversao {cliente_id, webhook_token, corpo}
      trilha-api (dados pessoais ficam só aqui):
@@ -141,18 +142,39 @@ Padrões dos coletores de mensuração da Trilha:
 
 ## 4. Campos personalizados padrão (criar em todo cliente)
 
+A lista é uma só, no código: `trilha/integracoes/kommo_padrao.py`. Quem cria e confere é o próprio sistema:
+
+```bash
+python -m trilha kommo conferir <perfil.yaml>             # só leitura: conta, funis, mapa de eventos, campos, motivos
+python -m trilha kommo preparar <perfil.yaml>             # plano do que falta
+python -m trilha kommo preparar <perfil.yaml> --aplicar   # cria funil padrão, campos e motivos do playbook; nunca altera nem apaga
+```
+
+O `preparar` imprime o bloco `crm.mapa_eventos` pronto para o `perfil.yaml`, com os IDs reais das etapas. O token vem de `KOMMO_TOKEN_<CLIENTE>` (ambiente ou `.env`) e o subdomínio do `perfil.yaml`.
+
 | Campo | Tipo | Preenchido por |
 |---|---|---|
 | `gclid`, `gbraid`, `wbraid` | texto | campo oculto da landing / GTM |
 | `fbclid` | texto | campo oculto da landing / GTM |
+| `ttclid` | texto | campo oculto da landing (TikTok Ads) |
 | `ctwa_clid` | texto | integração do WhatsApp (anúncio de clique para WhatsApp) |
 | `meta_lead_id` | texto | integração de formulário instantâneo |
-| `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term` | texto | landing |
-| `codigo_criativo` | texto | Salesbot lendo o código da mensagem pré-preenchida |
-| `origem` | lista | padronizada: meta, google, portal_zap, portal_vivareal, portal_olx, indicacao, organico, lista |
+| `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term` | texto | landing (o Kommo já traz esses como campos de rastreamento nativos) |
+| `codigo_criativo` | texto | Salesbot lendo o código da mensagem pré-preenchida (`ref: …` no site e nas LPs) |
+| `landing_page` | texto | Trilha-LP (`pagina_id`), para comparar versões de página |
+| `event_id_lead` | texto | Trilha-LP, para deduplicar o `Lead` do navegador com o do servidor |
+| `origem` | lista | padronizada: meta, google, tiktok, portal_zap, portal_vivareal, portal_olx, indicacao, organico, site, lista |
 | `motivo_perda` | lista | só se a conta não usar os motivos de perda nativos do Kommo |
 
 O valor do negócio (campo "venda" do lead) deve ser o valor de venda — VGV no imobiliário. É ele que o raio-x soma como valor vendido.
+
+### 4.1 Webhook do Kommo
+
+Em **Configurações → Integrações → Web hooks**, um webhook por cliente:
+
+- **Endereço:** `https://<dominio-do-n8n>/webhook/trilha-w01-kommo/kommo/<cliente_id>?token=<KOMMO_WEBHOOK_TOKEN_<CLIENTE>>`. O `trilha-w01-kommo` faz parte do caminho (é o `webhookId` do W01).
+- **Eventos:** só **Lead adicionado** e **Etapa do lead alterada**. "Lead alterado" dispara a cada edição do card; o W01 descarta, mas dobra as execuções.
+- O Kommo desativa sozinho um webhook que falha ou demora repetidamente. O W01 responde 200 antes de qualquer processamento; se o n8n ficar fora do ar, conferir em Web hooks se ele continua ativo.
 
 ## 5. Regras de envio
 

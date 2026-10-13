@@ -69,9 +69,11 @@ services:
       META_ACCESS_TOKEN: ${META_ACCESS_TOKEN}
       META_GRAPH_VERSION: ${META_GRAPH_VERSION}
       META_TEST_EVENT_CODE: ${META_TEST_EVENT_CODE}
+      TRILHA_RESPONSAVEL_TECNICO: ${TRILHA_RESPONSAVEL_TECNICO}
     env_file: [./kommo.env]              # KOMMO_TOKEN_<CLIENTE> e KOMMO_WEBHOOK_TOKEN_<CLIENTE> (um par por cliente)
     volumes:
       - ${TRILHA_CLIENTES_DIR:?caminho do repositório privado trilha-clientes}:/clientes:ro
+      - trilha_logs:/logs                # registro de envios (envios.jsonl) até o banco do ADR-001 estar no ar
     # sem porta pública: só o n8n fala com a API, pela rede interna
 
   caddy:
@@ -87,6 +89,7 @@ services:
 
 volumes:
   n8n_dados:
+  trilha_logs:
   pg_dados:
   redis_dados:
   caddy_dados:
