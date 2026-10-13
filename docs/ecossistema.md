@@ -38,7 +38,14 @@ O código da célula da grade (`PT01`, `GB01`…) amarra as etapas: nasce na gra
 
 A coluna do meio é o escopo deste sistema, não o que já roda. Estão prontos no código o raio-x (inclusive por criativo), a conversão para o Meta e as regras do freio e da saúde das contas, mas nada está em operação: a coleta, os materiais e as entregas dependem dos fluxos do n8n, que ainda não existem ([roadmap](roadmap.md)).
 
-## 4. O que este sistema precisa das outras ferramentas (contratos de interface)
+## 4. O caminho de volta: o que este sistema devolve
+
+O resultado medido aqui volta para onde a decisão foi tomada:
+- **Retorno do período:** `python -m trilha raio-x … --retorno ads/<id>/retornos` grava `<inicio>_<fim>.yaml` no Trilha-clientes (contrato `retorno`, versão 1). Ele traz o resultado de cada código de criativo (leads, qualificados, agendamentos, comparecimentos, vendas e custos) e os motivos de perda com a categoria.
+- **Trilha-briefing (`registrar-resultados`):** liga os códigos às hipóteses, mostra quais já têm volume para decidir e guarda uma cópia em `briefing/<id>/resultados/`. Quem decide se a hipótese foi validada é o assessor (`decidir`).
+- **Trilha-copy:** recebe as hipóteses decididas pelo contrato do briefing e mostra o aprendizado no pacote da célula. A peça vencedora vira referência (`vencedora`).
+
+## 5. O que este sistema precisa das outras ferramentas (contratos de interface)
 
 Este sistema não constrói essas ferramentas, mas depende do que elas gravam. Sem isso, a conversão real e os relatórios ficam incompletos.
 
@@ -66,11 +73,11 @@ Mudou uma etapa no Kommo, um campo oculto da página ou o fluxo do BotConversa? 
 | Disparos em massa | fora do escopo |
 | Landing pages feitas fora da Trilha-LP | algumas não gravam identificadores de clique nem UTMs em campo próprio, e versões antigas não enviam o lead a lugar nenhum. Sem isso a venda não volta às plataformas: o caminho é migrar para a Trilha-LP |
 
-## 5. Time comercial do cliente ≠ assessor
+## 6. Time comercial do cliente ≠ assessor
 
 O sistema **mede** o time comercial do cliente (corretores, atendentes) atendendo os leads: primeiro contato, cadência, conversão. Isso é o raio-x do funil. O sistema **não mede** o contato do assessor com o cliente (contatos proativos, respostas no grupo).
 
-## 6. Fora do escopo, de propósito
+## 7. Fora do escopo, de propósito
 
 - Construir landing pages, disparos em massa ou fluxos de CRM e atendimento.
 - Medir ou cobrar tempo de resposta e contatos do assessor com o cliente.

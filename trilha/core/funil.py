@@ -184,6 +184,7 @@ def _resumo(leads: list[LeadFunil]) -> dict:
     return {
         "leads": len(leads),
         "qualificados": sum(l.alcancou("lead_qualificado") for l in leads),
+        "agendamentos": sum(l.alcancou("agendamento") for l in leads),
         "comparecimentos": sum(l.alcancou("comparecimento") for l in leads),
         "vendas": len(vendidos),
         "valor_vendido": sum(l.valor or 0 for l in vendidos),

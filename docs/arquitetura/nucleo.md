@@ -132,7 +132,7 @@ Antes de anunciar, o assessor responde as perguntas de aderência do playbook (`
 
 ### 3.6 Uso da calculadora fora deste sistema
 
-A calculadora (`python -m trilha calcular`) também serve para prospecção comercial, mas esse é um uso paralelo ([ecossistema](../ecossistema.md) §4). Aqui ela existe para as metas de cada cliente.
+A calculadora (`python -m trilha calcular`) também serve para prospecção comercial, mas esse é um uso paralelo ([ecossistema](../ecossistema.md) §7). Aqui ela existe para as metas de cada cliente.
 
 ## 4. Onboarding flexível
 

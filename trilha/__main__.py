@@ -6,10 +6,11 @@ import argparse
 import json
 import sys
 from dataclasses import asdict
-
-from pydantic import ValidationError
+from datetime import date
 
 from pathlib import Path
+
+from pydantic import ValidationError
 
 from trilha.core.economia import calcular
 from trilha.core.oferta import carregar_oferta
@@ -90,7 +91,12 @@ def cmd_raio_x(args) -> int:
     if args.gasto_por_codigo:
         with open(args.gasto_por_codigo, encoding="utf-8") as f:
             gasto = {str(k): float(v) for k, v in json.load(f).items()}
-    r = raio_x(leads, carregar_playbook(perfil.cliente.segmento), args.investimento, crm=perfil.crm, gasto_por_codigo=gasto)
+    playbook = carregar_playbook(perfil.cliente.segmento)
+    r = raio_x(leads, playbook, args.investimento, crm=perfil.crm, gasto_por_codigo=gasto)
+    if args.retorno:
+        from trilha.core.retorno import gravar_retorno, montar_retorno
+        destino = gravar_retorno(montar_retorno(r, leads, perfil, playbook, args.inicio, args.fim), args.retorno)
+        print(f"✓ retorno para o briefing e a copy: {destino}")
     if args.json:
         print(json.dumps(r, ensure_ascii=False, indent=2, default=str))
         return 0
@@ -227,6 +233,9 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--investimento", type=float, help="investimento em mídia no período")
     s.add_argument("--gasto-por-codigo", help='JSON com o gasto de cada código de criativo: {"PT01": 1200}')
     s.add_argument("--json", action="store_true", help="saída completa em JSON")
+    s.add_argument("--retorno", metavar="PASTA", help="grava o retorno do período para o briefing (ads/<id>/retornos)")
+    s.add_argument("--inicio", type=date.fromisoformat, help="início do período (padrão: o primeiro lead)")
+    s.add_argument("--fim", type=date.fromisoformat, help="fim do período (padrão: o último lead)")
     s.set_defaults(func=cmd_raio_x)
 
     s = sub.add_parser("simular-webhook", help="mostra o que um webhook do Kommo enviaria ao Meta e ao Google")

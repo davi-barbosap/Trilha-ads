@@ -89,7 +89,7 @@ No n8n 2.x, `N8N_BLOCK_ENV_ACCESS_IN_NODE` vem como `true` (nós não leem vari�
 | Sintoma | Onde olhar | Ação |
 |---|---|---|
 | Aviso do W10 no Slack | link da execução no aviso | ler a etapa e o erro; 401/403 = credencial; 429 = limite da API (o fluxo tenta de novo); 5xx = indisponibilidade da plataforma |
-| W01 avisa "lead sem identificador" com frequência | campos `gclid`/`fbclid`/`ctwa_clid` no Kommo do cliente | acionar quem cuida das landing pages, do GTM e do BotConversa: o contrato de interface não está sendo cumprido ([ecossistema](../ecossistema.md) §3) |
+| W01 avisa "lead sem identificador" com frequência | campos `gclid`/`fbclid`/`ctwa_clid` no Kommo do cliente | acionar quem cuida das landing pages, do GTM e do BotConversa: o contrato de interface não está sendo cumprido ([ecossistema](../ecossistema.md) §5) |
 | W01 avisa "etapa não confirmada no Kommo" | etapa atual do lead no Kommo | normal se o lead mudou de etapa em segundos; frequente = alguém está movendo leads em massa ou o webhook está forjado (W10 mostra 403 em tentativas recusadas) |
 | `/conversao` responde 403 | aviso do W10 | segredo errado na URL do Kommo daquele cliente, ou chamada vinda de outra conta Kommo |
 | W01 avisa "perfil sem …" | `perfil.yaml` do cliente em `trilha-clientes` | completar o bloco e rodar `python -m trilha validar` |

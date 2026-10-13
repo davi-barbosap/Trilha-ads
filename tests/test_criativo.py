@@ -89,6 +89,43 @@ class TestRaioXPorCriativo(unittest.TestCase):
         self.assertEqual(list(c), ["v0", "v1", SEM_CODIGO])
 
 
+class TestRetorno(unittest.TestCase):
+    """O que volta para o briefing: resultado por código e motivos de perda (contrato retorno)."""
+
+    def test_monta_por_codigo_e_motivos(self):
+        from datetime import date
+
+        from trilha.core.perfil import carregar_perfil
+        from trilha.core.retorno import VERSAO_RETORNO, montar_retorno
+        perdidos = [lead(i, "PT02") for i in (8, 9, 10)]
+        motivos = ["Fora do perfil financeiro", "Fora do perfil financeiro", "Não respondeu às tentativas de contato"]
+        for l, m in zip(perdidos, motivos):
+            l.perdido_em, l.motivo_perda = T0, m
+        leads = [lead(1, "PT01", venda=True), lead(2, "PT01", qualificado=True), *perdidos]
+        r = raio_x(leads, PB, gasto_por_codigo={"PT01": 200.0, "PT02": 300.0})
+        ret = montar_retorno(r, leads, carregar_perfil(PERFIL), PB, fim=date(2026, 9, 30))
+        self.assertEqual(ret["retorno"], VERSAO_RETORNO)
+        self.assertEqual(ret["periodo"], {"inicio": date(2026, 9, 1), "fim": date(2026, 9, 30)})
+        self.assertEqual((ret["por_codigo"]["PT01"]["vendas"], ret["por_codigo"]["PT01"]["cpl"]), (1, 100.0))
+        self.assertIn("agendamentos", ret["por_codigo"]["PT02"])
+        self.assertEqual(ret["motivos_perda"][0], {"motivo": "Fora do perfil financeiro", "categoria": "lead", "leads": 2})
+        self.assertEqual(ret["motivos_perda"][1]["categoria"], "atendimento")
+
+    def test_cli_grava_o_retorno(self):
+        import yaml
+        with tempfile.TemporaryDirectory() as tmp:
+            saida = io.StringIO()
+            with contextlib.redirect_stdout(saida):
+                rc = main(["raio-x", str(FIX / "funil_leads.json"), "--perfil", str(PERFIL), "--retorno", tmp])
+            self.assertEqual(rc, 0)
+            [arquivo] = list(Path(tmp).glob("*.yaml"))
+            dados = yaml.safe_load(arquivo.read_text(encoding="utf-8"))
+        self.assertIn("✓ retorno para o briefing", saida.getvalue())
+        self.assertEqual(dados["cliente"], "_exemplo")
+        self.assertIn("v0", dados["por_codigo"])
+        self.assertTrue(dados["motivos_perda"])
+
+
 class TestCliEApi(unittest.TestCase):
     def test_cli_com_gasto_por_codigo(self):
         with tempfile.TemporaryDirectory() as tmp:

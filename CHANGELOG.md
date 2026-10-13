@@ -2,6 +2,14 @@
 
 As versões anteriores estão descritas no histórico do Git.
 
+## 0.9.0 — caminho de volta para o briefing (out/2026)
+
+- **`raio-x … --retorno <pasta>`:** grava o retorno do período (`<inicio>_<fim>.yaml`, contrato `retorno` versão 1).
+  - **Conteúdo:** o resultado por código de criativo e os motivos de perda do Kommo, com a categoria do playbook e a contagem.
+  - **Destino:** `ads/<id>/retornos/` no Trilha-clientes. O Trilha-briefing lê com `registrar-resultados`.
+  - **Período:** sai das datas dos leads, ou de `--inicio` e `--fim`.
+- **`agendamentos`** entra no resumo por criativo, por responsável e por closer, para as hipóteses medidas em agendamento.
+
 ## 0.8.0 — raio-x por criativo (out/2026)
 
 - **`por_criativo` no raio-x:** leads, qualificados, vendas e taxa de qualificação por código da célula da grade, lido do `utm_content` pela régua das UTMs ("VD01 | Ana" → "VD01"; `{{…}}`, vazio e "—" contam como vazio).

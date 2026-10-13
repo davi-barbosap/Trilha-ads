@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trilha"
-version = "0.8.0"
+version = "0.9.0"
 description = "Núcleo de automação de mídia paga (Meta Ads e Google Ads) agnóstico de cliente"
 requires-python = ">=3.11"
 dependencies = [
