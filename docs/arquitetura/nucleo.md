@@ -275,15 +275,14 @@ assets:
 
 Feito pelo [Trilha-copy](https://github.com/davi-barbosap/Trilha-copy), que revisa os anúncios de Meta e Google e os roteiros contra o briefing: termos e promessas proibidos, lastro de números e provas, urgência real, limites e políticas de cada plataforma, voz e intensidade. Só peça aprovada sai, com o código da célula em `utm_content`.
 
-### 5.4 Taxonomia de ângulos (liga brand kit e motores)
+### 5.4 Código do criativo (liga a grade aos resultados)
 
-Todo criativo, anúncio e mensagem recebe etiquetas, de preferência codificadas no nome:
+Todo anúncio carrega o **código da célula** da grade do Trilha-briefing (`PT01`, `GB01`…): no nome (`PT01 | v1`) e no `utm_content`. O nome fica curto de propósito, porque é digitado à mão, e um nome com muitas etiquetas quebra.
 
-`eixo · objeção tratada · avatar · formato · gancho · oferta · versão`
-
-- **Eixos** vêm do playbook do segmento (imobiliário: preço, produto, localização).
-- Com as etiquetas, o detector de vencedores responde **qual argumento converte** para qual avatar, não apenas qual anúncio.
-- Cobertura: o sistema aponta no dossiê os eixos do segmento sem criativo ativo ou sem teste recente.
+- As características do criativo (persona, argumento, oferta, eixo, formato, gancho) ficam nos arquivos do briefing e da copy, ligadas ao código, e não no nome.
+- O raio-x agrupa leads, qualificados e vendas por código (`por_criativo`). Com o gasto de cada código, mostra também os custos. O padrão do código é editável por cliente (`crm.padrao_codigo`).
+- Cruzando o código com a grade, o material responde **qual argumento converte** para qual persona, e não só qual anúncio.
+- Cobertura (a fazer): apontar no dossiê os eixos do segmento sem criativo ativo ou sem teste recente.
 
 ## 6. Playbooks de segmento
 

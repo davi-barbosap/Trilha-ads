@@ -38,7 +38,7 @@ O sistema entra em operação num cliente piloto, é testado na prática e depoi
 
 ## Antes de operar, sem depender do n8n
 
-- ⬜ **Raio-x por código da célula** (`utm_content` = `PT01`…): leads, qualificados e vendas por criativo, e o gasto por anúncio quando houver coleta. Hoje o lead já chega com o código, mas o raio-x agrupa só por campanha. É o que permite concluir as hipóteses do briefing (PT01 contra PT02).
+- ✅ **Raio-x por código da célula** (`utm_content` = `PT01`…): leads, qualificados e vendas por criativo, com custos quando há o gasto de cada código (`--gasto-por-codigo` ou `gasto_por_codigo` na API). Padrão do código editável por cliente (`crm.padrao_codigo`). Falta a coleta (W02) trazer o gasto por anúncio sozinha.
 - ⬜ Ler `landing_page` e `event_id_lead`, que a Trilha-LP já grava no Kommo: raio-x por versão de página e deduplicação do `Lead` com o do navegador.
 - ⬜ Validar o `marca.yaml` que o Trilha-briefing exporta (hoje chega e não é lido).
 
@@ -46,7 +46,7 @@ O sistema entra em operação num cliente piloto, é testado na prática e depoi
 
 Sem prazo. Cada item entra quando a operação mostrar que vale a pena.
 
-- Taxonomia de ângulos e renomeação dos anúncios existentes (o material passa a dizer "qual argumento converte").
+- Renomear os anúncios existentes com o código da célula (`PT01 | v1`) e cruzar o raio-x por criativo com a grade, para o material dizer "qual argumento converte".
 - Subida de campanhas e anúncios aprovados pelo assessor.
 - Auditoria de onboarding automatizada (Meta, Google, desperdício em termos de pesquisa).
 - Varredura de termos de pesquisa do Google como ponto de atenção no dossiê.

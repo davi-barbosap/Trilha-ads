@@ -59,3 +59,32 @@ def normalizar_canal(origem: str | None, apelidos: dict[str, str] | None = None)
 
 def eh_pago(canal: str | None) -> bool:
     return canal in CANAIS_PAGOS
+
+
+# ---------- código do criativo (a célula da grade do Trilha-briefing) ----------
+
+PADRAO_CODIGO = r"[A-Z0-9]{2,8}"  # o mesmo da grade do Trilha-briefing: PT01, GB01…
+SEM_CODIGO = "sem código"
+_UTM_VAZIA = {"", "—", "–", "-", "(not set)", "not set"}
+
+
+def limpar_utm(valor: str | None) -> str | None:
+    """Régua das UTMs: '+' vira espaço; '{{…}}' (parâmetro que a plataforma não preencheu), vazio e '—' são vazio."""
+    if valor is None:
+        return None
+    v = str(valor).replace("+", " ").strip()
+    if v.lower() in _UTM_VAZIA or (v.startswith("{{") and v.endswith("}}")):
+        return None
+    return v
+
+
+def codigo_criativo(utm_content: str | None, padrao: str = PADRAO_CODIGO) -> str | None:
+    """O código da célula no utm_content: o que vem antes de ' | ' ('VD01 | Ana' → 'VD01'), se seguir o padrão.
+
+    Fora do padrão volta None: um código inventado no nome do anúncio não pode virar uma célula que não existe.
+    """
+    v = limpar_utm(utm_content)
+    if v is None:
+        return None
+    candidato = v.split("|")[0].strip()
+    return candidato if re.fullmatch(padrao, candidato) else None

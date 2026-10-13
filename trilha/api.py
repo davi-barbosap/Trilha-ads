@@ -12,7 +12,7 @@ Rotas (todas exigem Authorization: Bearer <TRILHA_API_TOKEN>, exceto /saude):
   POST /conversao      {"cliente_id", "webhook_token", "corpo": <webhook do Kommo, texto ou objeto>, "simular"?}
   POST /freio/avaliar  {"cliente_id", "campanhas": [{plataforma, campanha_id, nome, ativa,
                         gasto_desde_ultimo_lead, horas_sem_evento_conversao, gasto_ultimas_horas}]}
-  POST /funil/raio-x   {"cliente_id", "leads": [LeadFunil], "investimento"?, "investimento_captacao"?}
+  POST /funil/raio-x   {"cliente_id", "leads": [LeadFunil], "investimento"?, "investimento_captacao"?, "gasto_por_codigo"?}
   POST /contas/saude   {"cliente_id", "contas": [{nome, id, status, saldo, gasto_7d, anuncios_com_problema…}],
                         "credencial_ok"?, "conferir_acesso"?}
 
@@ -269,9 +269,13 @@ class TrilhaApi:
             raise ErroHttp(422, f"correcoes.yaml de '{p.cliente.id}' inválido: {e}") from e
         leads = aplicar_correcoes(leads, correcoes)
         investimento, captacao = dados.get("investimento"), dados.get("investimento_captacao")
+        gasto = dados.get("gasto_por_codigo")
+        if gasto is not None and not (isinstance(gasto, dict) and all(isinstance(v, (int, float)) for v in gasto.values())):
+            raise ErroHttp(400, "gasto_por_codigo precisa ser um objeto {código: gasto}")
         return {"cliente": p.cliente.id,
                 **raio_x(leads, carregar_playbook(p.cliente.segmento), float(investimento) if investimento else None, crm=p.crm,
-                         investimento_captacao=float(captacao) if captacao is not None else None)}
+                         investimento_captacao=float(captacao) if captacao is not None else None,
+                         gasto_por_codigo={str(k): float(v) for k, v in gasto.items()} if gasto else None)}
 
 
 class _ServidorThreads(ThreadingMixIn, WSGIServer):

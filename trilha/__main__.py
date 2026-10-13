@@ -86,7 +86,11 @@ def cmd_raio_x(args) -> int:
     with open(args.leads, encoding="utf-8") as f:
         leads = [LeadFunil.model_validate(x) for x in json.load(f)]
     leads = aplicar_correcoes(leads, carregar_correcoes(Path(args.perfil).parent / "correcoes.yaml"))
-    r = raio_x(leads, carregar_playbook(perfil.cliente.segmento), args.investimento, crm=perfil.crm)
+    gasto = None
+    if args.gasto_por_codigo:
+        with open(args.gasto_por_codigo, encoding="utf-8") as f:
+            gasto = {str(k): float(v) for k, v in json.load(f).items()}
+    r = raio_x(leads, carregar_playbook(perfil.cliente.segmento), args.investimento, crm=perfil.crm, gasto_por_codigo=gasto)
     if args.json:
         print(json.dumps(r, ensure_ascii=False, indent=2, default=str))
         return 0
@@ -138,6 +142,13 @@ def cmd_raio_x(args) -> int:
             print(f"                 perfil {d['perfil']} (100 = melhor do time no período)")
         elif not d["amostra_suficiente"]:
             print("                 (amostra pequena para comparar)")
+    if r["por_criativo"]:
+        print("\nPor criativo (código da célula):")
+        for nome, d in r["por_criativo"].items():
+            custos = (f" · gasto {_brl(d['gasto'])} · CPL {_brl(d['cpl'])} · {_brl(d['custo_por_qualificado'])} por qualificado"
+                      f" · {_brl(d['custo_por_venda'])} por venda") if "gasto" in d else ""
+            print(f"  {nome:<12} {d['leads']:>4} leads · {d['qualificados']} qualificados ({_pct(d['taxa_qualificacao'])})"
+                  f" · {d['vendas']} venda{'' if d['vendas'] == 1 else 's'}{custos}")
     if r["por_closer"]:
         print("\nPor closer:")
         for nome, d in r["por_closer"].items():
@@ -214,6 +225,7 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("leads", help="JSON com o histórico dos leads do período")
     s.add_argument("--perfil", required=True)
     s.add_argument("--investimento", type=float, help="investimento em mídia no período")
+    s.add_argument("--gasto-por-codigo", help='JSON com o gasto de cada código de criativo: {"PT01": 1200}')
     s.add_argument("--json", action="store_true", help="saída completa em JSON")
     s.set_defaults(func=cmd_raio_x)
 

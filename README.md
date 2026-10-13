@@ -16,7 +16,7 @@ O sistema **não decide estratégia nem verba, não cria campanhas e não fala c
 | 4. Execução e medição | **Trilha-ads (este)** | coleta, confere e calcula: raio-x do funil, conversão real, freio, material das reuniões |
 | Dados dos clientes | Trilha-clientes (privado) | os arquivos reais de cada cliente; este sistema lê a pasta `ads/` |
 
-O código da célula da grade (`PT01`, `GB01`…) amarra as etapas: nasce na grade do briefing, vai no anúncio como `utm_content` e na mensagem do WhatsApp da página, e chega ao lead no Kommo. **Este sistema ainda não agrupa os resultados por esse código**; está no [roadmap](docs/roadmap.md).
+O código da célula da grade (`PT01`, `GB01`…) amarra as etapas: nasce na grade do briefing, vai no anúncio como `utm_content` e na mensagem do WhatsApp da página, e chega ao lead no Kommo. O raio-x agrupa os resultados por esse código; o padrão do código é editável por cliente (`crm.padrao_codigo`).
 
 ## O que faz
 
@@ -26,7 +26,7 @@ O código da célula da grade (`PT01`, `GB01`…) amarra as etapas: nasce na gra
 |---|---|---|
 | **Validação do cliente** | `validar` · `POST /validar` | Confere `perfil.yaml` e `ofertas/` contra o esquema. Lista as etapas do funil sem mapa no Kommo, as perguntas do diagnóstico de aderência da oferta sem resposta e os sinais de risco da oferta. |
 | **Metas pela economia unitária** | `calcular` · `POST /calcular` | CAC, CPL e CPL qualificado máximos. Calcula a verba mensal para a plataforma aprender em cada degrau (lead, qualificado, agendamento, venda) e mostra quais degraus a verba sustenta. |
-| **Raio-x do funil** | `raio-x` · `POST /funil/raio-x` | Mostra cada etapa contra a referência do playbook e o maior vazamento, em vendas e em R$. Separa as perdas por categoria (qualidade do lead, atendimento, comercial, externa). Mede o primeiro contato humano em minutos de expediente e a cadência. Põe lado a lado o que o marketing entregou e o que o comercial converteu, compara SDR e closer, traça o perfil de cada pessoa do time e aponta os leads parados. |
+| **Raio-x do funil** | `raio-x` · `POST /funil/raio-x` | Mostra cada etapa contra a referência do playbook e o maior vazamento, em vendas e em R$. Separa as perdas por categoria (qualidade do lead, atendimento, comercial, externa). Mede o primeiro contato humano em minutos de expediente e a cadência. Põe lado a lado o que o marketing entregou e o que o comercial converteu, compara SDR e closer, traça o perfil de cada pessoa do time e aponta os leads parados. **Por criativo:** leads, qualificados e vendas por código da célula (`utm_content`), com os custos quando há o gasto de cada código. |
 | **Conversão real** | `simular-webhook` · `POST /conversao` | Quando o lead muda de etapa no Kommo, confirma a etapa lendo o Kommo e monta o evento para o Meta (API de Conversões) e o Google (Data Manager API), com hash e deduplicação. O envio ao Meta está implementado; ao Google, por enquanto, só o payload. |
 | **Freio de emergência** | `POST /freio/avaliar` | Duas regras: gasto desde o último lead de 3× o CPL máximo ou mais, e 6 h ou mais sem evento de conversão com a campanha gastando. Devolve a ação (pausar e avisar). Quem executa é o fluxo do n8n, com botão de desfazer. |
 | **Saúde das contas** | `POST /contas/saude` | Avisa dias de saldo pré-pago (prioridade 1 abaixo de 5 dias, 2 abaixo de 10), sugere a recarga para 30 dias e aponta anúncios reprovados e conta desativada ou com pagamento pendente. |
@@ -70,8 +70,8 @@ Nada sai do sistema direto para o cliente. Urgências vão para o Slack da opera
 - Não constrói página, fluxo de CRM ou disparo ([ecossistema](docs/ecossistema.md)).
 - Não mede o contato do assessor com o cliente. Ele mede o time comercial **do cliente**.
 - **Ainda não lê:**
-  - campanhas e anúncios do Meta e do Google (gasto, criativos);
-  - o código da célula por anúncio;
+  - campanhas e anúncios do Meta e do Google (gasto, criativos): o gasto por código é informado à mão (`--gasto-por-codigo`) até existir a coleta;
+  - o plano de campanhas do Trilha-briefing, para comparar o planejado com o que está rodando;
   - o `marca.yaml`;
   - os campos `landing_page` e `event_id_lead` que a Trilha-LP grava.
 
@@ -80,7 +80,7 @@ Nada sai do sistema direto para o cliente. Urgências vão para o Slack da opera
 - **Pronto:**
   - esquemas do perfil e das ofertas;
   - funil padrão e playbook do imobiliário;
-  - raio-x, calculadora e conversão para o Meta;
+  - raio-x (inclusive por criativo), calculadora e conversão para o Meta;
   - regras do freio e da saúde;
   - API, fluxos-modelo W01 e W10 e infraestrutura descrita em `infra/`.
 - **Falta para operar:**
@@ -114,6 +114,7 @@ python -m trilha validar clientes/_exemplo/perfil.yaml      # confere a ficha de
 python -m trilha calcular clientes/_exemplo/perfil.yaml     # CAC, CPL máximos e verba por degrau
 python -m trilha raio-x tests/fixtures/funil_leads.json \
   --perfil clientes/_exemplo/perfil.yaml --investimento 7550 # raio-x do funil
+  # com --gasto-por-codigo gasto.json ({"v0": 1800, ...}), o raio-x por criativo mostra os custos
 python -m trilha simular-webhook tests/fixtures/kommo_webhook.txt \
   --perfil clientes/_exemplo/perfil.yaml \
   --lead tests/fixtures/kommo_lead.json --contato tests/fixtures/kommo_contato.json   # o que seria enviado, sem enviar

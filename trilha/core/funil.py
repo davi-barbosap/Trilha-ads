@@ -17,7 +17,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from trilha.core.atribuicao import NAO_RASTREADO, eh_pago, slug
+from trilha.core.atribuicao import NAO_RASTREADO, SEM_CODIGO, codigo_criativo, eh_pago, slug
 from trilha.core.perfil import ETAPAS_FUNIL, Crm, Etapa, HorarioComercial, TagsCrm
 from trilha.core.playbook import Playbook
 
@@ -190,6 +190,29 @@ def _resumo(leads: list[LeadFunil]) -> dict:
     }
 
 
+def _por_criativo(leads: list[LeadFunil], padrao: str, gasto: dict[str, float] | None, agrupar) -> dict:
+    """Leads, qualificados e vendas por código de criativo (a célula da grade); custos quando há o gasto de cada código.
+
+    Só aparece quando algum lead tem utm_content ou quando o gasto por código foi informado. Código com gasto e sem
+    lead também aparece: gastou e não trouxe ninguém.
+    """
+    gasto = gasto or {}
+    if not gasto and not any(l.criativo for l in leads):
+        return {}
+    saida = {}
+    for nome, ls in agrupar(lambda l: codigo_criativo(l.criativo, padrao) or SEM_CODIGO):
+        saida[nome] = _resumo(ls)
+    for nome in gasto:
+        saida.setdefault(nome, _resumo([]))
+    for nome, d in saida.items():
+        d["taxa_qualificacao"] = _taxa(d["qualificados"], d["leads"])
+        if nome in gasto:
+            g = float(gasto[nome])
+            d.update(gasto=g, cpl=_div(g, d["leads"]), custo_por_qualificado=_div(g, d["qualificados"]),
+                     custo_por_venda=_div(g, d["vendas"]))
+    return dict(sorted(saida.items(), key=lambda x: (x[0] == SEM_CODIGO, x[0])))
+
+
 def _local(d: datetime, horario: HorarioComercial) -> datetime:
     """Horário local do cliente (o Kommo devolve UTC)."""
     if d.tzinfo is None:
@@ -238,12 +261,15 @@ def raio_x(
     dias_parado: int | None = None,
     crm: Crm | None = None,
     investimento_captacao: float | None = None,
+    gasto_por_codigo: dict[str, float] | None = None,
 ) -> dict:
     """Raio-x de um período (safra de leads).
 
     `crm` traz as regras do cliente (tags, baldes, gestores, expediente, dias de parado, prazo de primeiro
     contato); os parâmetros explícitos prevalecem. `referencia` (conversão por etapa) padrão: a do playbook.
     `investimento_captacao` (sem campanhas de topo de funil) é o divisor do CPL; os demais custos usam o total.
+    `gasto_por_codigo` ({"PT01": 1200.0}) é o gasto de cada código de criativo no período; com ele, o raio-x por
+    criativo mostra os custos, e sem ele, só volumes e taxas.
     """
     crm = crm or Crm(subdominio="-")
     sla = sla_primeiro_contato_min if sla_primeiro_contato_min is not None else crm.sla_primeiro_contato_min
@@ -502,6 +528,7 @@ def raio_x(
     por_canal = {nome: _resumo(ls) for nome, ls in _agrupar(lambda l: l.canal or NAO_RASTREADO)} if canal_informado else {}
     por_campanha = {nome: _resumo(ls) for nome, ls in _agrupar(lambda l: l.campanha or "sem campanha")}
     por_score = {nome: _resumo(ls) for nome, ls in _agrupar(lambda l: l.score or "sem score")} if any(l.score for l in leads) else {}
+    por_criativo = _por_criativo(leads, crm.padrao_codigo, gasto_por_codigo, _agrupar)
 
     # 9. Chegada dos leads por dia da semana e hora (horário do cliente): base do plantão e do prazo de contato
     entradas = [_local(l.etapas["lead"], horario) for l in leads if "lead" in l.etapas]
@@ -550,6 +577,7 @@ def raio_x(
         "motivos_distintos_fora_da_lista": len(fora_da_lista),
         "leads_nao_rastreados": _taxa(sum((l.canal or NAO_RASTREADO) == NAO_RASTREADO for l in leads), n) if canal_informado else None,
         "leads_sem_responsavel": _taxa(sum(not _pessoa_do_time(l.responsavel, baldes) for l in leads), n),
+        "leads_pagos_sem_codigo_criativo": _taxa(sum(codigo_criativo(l.criativo, crm.padrao_codigo) is None for l in pagos), len(pagos)),
     }
     sinais = []
     perdidos_antes = [l for l in perdidos if not l.alcancou("lead_qualificado")]
@@ -566,6 +594,9 @@ def raio_x(
         sinais.append("mais de 20% dos leads sem canal: revisar UTMs e campo de origem")
     if (qualidade["leads_sem_responsavel"] or 0) > 0.20:
         sinais.append("mais de 20% dos leads sem responsável")
+    if (qualidade["leads_pagos_sem_codigo_criativo"] or 0) > 0.20:
+        sinais.append(f"{qualidade['leads_pagos_sem_codigo_criativo']:.0%} dos leads de mídia paga sem código de criativo no "
+                      "utm_content: o raio-x por criativo fica incompleto (confira as UTMs dos anúncios e a mensagem do WhatsApp)")
     if qualidade["vendas_sem_valor"]:
         sinais.append(f"{qualidade['vendas_sem_valor']} venda(s) sem valor no Kommo: o valor vendido e o retorno ficam subestimados")
     if criterio_a_revisar:
@@ -608,6 +639,7 @@ def raio_x(
         "por_closer": por_closer,
         "por_canal": por_canal,
         "por_campanha": por_campanha,
+        "por_criativo": por_criativo,
         "por_score": por_score,
         "chegada": chegada,
         "parados": parados,

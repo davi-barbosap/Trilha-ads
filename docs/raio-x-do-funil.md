@@ -92,7 +92,7 @@ A referência vem do playbook do segmento. Segmento sem referência compara com 
 
 ## Atribuição pelo Kommo
 
-Em ciclos longos a venda acontece muito depois do clique, fora da janela de atribuição das plataformas. A janela do Google para conversões offline é de até 90 dias; acima disso, o sistema não envia e registra o motivo. O raio-x atribui vendas à campanha gravada no próprio lead (UTMs no Kommo), então **nenhuma venda se perde no relatório**, esteja ou não na janela da plataforma. A atribuição por criativo (o código da célula em `utm_content`) ainda não está implementada: está no [roadmap](roadmap.md).
+Em ciclos longos a venda acontece muito depois do clique, fora da janela de atribuição das plataformas. A janela do Google para conversões offline é de até 90 dias; acima disso, o sistema não envia e registra o motivo. O raio-x atribui vendas à campanha e ao criativo gravados no próprio lead (UTMs no Kommo), então **nenhuma venda se perde no relatório**, esteja ou não na janela da plataforma. O criativo é o código da célula da grade no `utm_content` (`por_criativo`: leads, qualificados, vendas e, com o gasto de cada código, os custos). O gasto por código chega pela coleta diária (W02); antes dela, pode ser informado à mão (`--gasto-por-codigo`).
 
 ## Time comercial do cliente ≠ assessor
 

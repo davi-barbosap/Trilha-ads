@@ -47,6 +47,9 @@ crm:
   gestores: []                    # aparecem no raio-x, fora da média e dos sinais por pessoa
   origens:                        # apelidos de origem deste cliente, antes da regra geral
     trilha-performance: Meta Ads
+  # Código do criativo no utm_content. O padrão é o da grade do Trilha-briefing (PT01, GB01…); este cliente
+  # nomeia os criativos v0, v1, v2… desde antes da grade, então o padrão dele é outro.
+  padrao_codigo: "v[0-9]+"
   # Tags do Kommo lidas pelo raio-x (padrão em trilha/core/perfil.py, TagsCrm). Só declarar o que for diferente:
   # tags: { comparecimento: [reunião-realizada], reativado: [lead reativado] }
   # Papel de cada funil do Kommo. O "ganho" (142) muda de sentido: no Closer é venda, no SDR costuma ser

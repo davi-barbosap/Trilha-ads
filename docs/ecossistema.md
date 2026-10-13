@@ -20,7 +20,7 @@ O sistema **não pensa a estratégia** e **não fala com o cliente**.
 | 4. Execução e medição | **Trilha-ads (este)** | coleta, confere e calcula: raio-x do funil, conversão real, freio, material das reuniões |
 | Dados dos clientes | Trilha-clientes (privado) | os arquivos reais de cada cliente; este sistema lê a pasta `ads/` |
 
-O código da célula da grade (`PT01`, `GB01`…) amarra as etapas: nasce na grade do briefing, vai no anúncio como `utm_content` e na mensagem do WhatsApp da página, e chega ao lead no Kommo. Este sistema ainda não agrupa os resultados por esse código ([roadmap](roadmap.md)).
+O código da célula da grade (`PT01`, `GB01`…) amarra as etapas: nasce na grade do briefing, vai no anúncio como `utm_content` e na mensagem do WhatsApp da página, e chega ao lead no Kommo. O raio-x agrupa os resultados por esse código ([métricas](metricas.md)).
 
 ## 3. As três colunas
 
@@ -36,7 +36,7 @@ O código da célula da grade (`PT01`, `GB01`…) amarra as etapas: nasce na gra
 | Reunião mensal: conduz | **Painel da carteira** para a reunião de equipe | **Captura de tarefas no ClickUp no mesmo dia** (n8n) |
 | Alinhamento com a equipe | | |
 
-A coluna do meio é o escopo deste sistema, não o que já roda. Estão prontos no código o raio-x, a conversão para o Meta e as regras do freio e da saúde das contas, mas nada está em operação: a coleta, os materiais e as entregas dependem dos fluxos do n8n, que ainda não existem ([roadmap](roadmap.md)).
+A coluna do meio é o escopo deste sistema, não o que já roda. Estão prontos no código o raio-x (inclusive por criativo), a conversão para o Meta e as regras do freio e da saúde das contas, mas nada está em operação: a coleta, os materiais e as entregas dependem dos fluxos do n8n, que ainda não existem ([roadmap](roadmap.md)).
 
 ## 4. O que este sistema precisa das outras ferramentas (contratos de interface)
 
@@ -46,7 +46,7 @@ Este sistema não constrói essas ferramentas, mas depende do que elas gravam. S
 |---|---|---|---|
 | **Trilha-briefing** | `marca.yaml`, `ofertas/*.yaml` e `perfil.parcial.yaml` que passam no `python -m trilha validar` ([ADR-005](decisoes/005-cadastro-pelo-trilha-briefing.md)) | contrato de dados do cadastro | entrega; teste de contrato no briefing |
 | **Trilha-LP** | campos ocultos com `gclid`, `gbraid`, `wbraid`, `fbclid` e as 5 UTMs, gravados nos campos do lead no Kommo ([Kommo](integracoes/kommo.md) §4); payload com esquema fixo; telefone em E.164 sem duplicar o DDI; hora do clique; evento de lead só depois do recebimento confirmado, com `event_id` compartilhado com o servidor; botão de WhatsApp com o código do criativo na mensagem | sem o identificador de clique, a venda não volta para o Google e o Meta; sem código no WhatsApp, o lead do botão chega sem atribuição | entrega. Grava também `landing_page` e `event_id_lead`, que este sistema ainda não lê |
-| **Trilha-copy** | anúncios aprovados com o código da célula como `utm_content` | atribuição por criativo | entrega; este sistema ainda não agrupa por código |
+| **Trilha-copy** | anúncios aprovados com o código da célula como `utm_content` | atribuição por criativo (`por_criativo` no raio-x) | entrega |
 | **BotConversa** | na conversa vinda de anúncio de clique para WhatsApp, repassar o `ctwa_clid` e as UTMs ao lead no Kommo; mover o lead nas etapas padronizadas | sem o `ctwa_clid`, a qualificação da conversa não volta para o Meta | depende da configuração de cada cliente |
 | **GA4 / GTM** | tag do Google e pixel do Meta funcionando nas páginas; eventos de conversão do site; `event_id` compartilhado entre pixel e servidor | o freio usa "horas sem evento de conversão"; deduplicação no Meta | depende da configuração de cada cliente |
 | **Fluxos de CRM (Kommo)** | funil com as etapas padrão; motivos de perda nativos com a lista padrão, obrigatórios; responsável em todo lead; contatos registrados no Kommo ([raio-x do funil](raio-x-do-funil.md), contrato) | sem isso não há raio-x: não dá para saber onde está o vazamento nem de quem é a perda | depende da configuração de cada cliente |

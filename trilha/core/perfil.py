@@ -6,12 +6,15 @@ preenchido pelo assessor) e o núcleo: nenhum módulo liga com um perfil que nã
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from pathlib import Path
 from typing import Annotated, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from trilha.core.atribuicao import PADRAO_CODIGO
 
 # Funil padrão da Trilha, igual para todos os segmentos (o playbook só muda os nomes exibidos).
 ETAPAS_FUNIL = ("lead", "em_atendimento", "lead_qualificado", "agendamento", "comparecimento", "proposta", "venda")
@@ -175,11 +178,21 @@ class Crm(_Base):
     sla_primeiro_contato_min: Positivo = 30  # do time comercial do cliente com o lead
     tags: TagsCrm = Field(default_factory=TagsCrm)
     origens: dict[str, str] = Field(default_factory=dict)  # apelidos do cliente: {"trilha-performance": "Meta Ads"}
+    # Padrão do código do criativo no utm_content (o da grade do Trilha-briefing). Mude só se o cliente usar outro.
+    padrao_codigo: str = PADRAO_CODIGO
     baldes: list[str] = Field(default_factory=list)  # usuários que não são pessoas (ex.: o usuário da empresa)
     gestores: list[str] = Field(default_factory=list)  # aparecem no raio-x, fora da média e dos sinais por pessoa
     dias_parado: Annotated[int, Field(ge=1)] = 15
     dias_base_velha: Annotated[int, Field(ge=1)] = 30
     horario_comercial: HorarioComercial = Field(default_factory=HorarioComercial)
+
+    @model_validator(mode="after")
+    def _padrao_codigo_valido(self) -> Crm:
+        try:
+            re.compile(self.padrao_codigo)
+        except re.error as e:
+            raise ValueError(f"crm.padrao_codigo não é uma expressão regular válida: {e}") from e
+        return self
 
     def funil(self, pipeline_id: int | None) -> Funil | None:
         return next((f for f in self.funis if f.pipeline_id == pipeline_id), None)

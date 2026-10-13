@@ -15,6 +15,7 @@ Todo número que o sistema mostra (dossiê, relatório, pacote da reunião, pain
 | **Canal** | Campo "Origem" (do lead ou, vazio, do contato) normalizado: Meta+Ads/Facebook/Instagram → **Meta Ads**; google → **Google Ads**; indicação/recomendação → **Indicação**; `(referral)` (visita vinda de outro site, gravada pelas landing pages) → **Outro site**; vazio, "unknown" ou lixo → **Não rastreado**. Antes da regra geral valem os **apelidos do cliente** (`crm.origens`, ex.: `trilha-performance: Meta Ads`). Origem sem regra sai com o nome que o CRM registrou, nunca num balde "outros". |
 | **Canal da venda** | O do card de fechamento; vazio, o do **primeiro card da pessoa** nos funis de entrada. |
 | **UTMs** | `+` vira espaço; `{{…}}`, vazio e "—" são vazio; o criativo é o código antes de " \| " ("VD01 \| Ana" → "VD01"), que é o que casa com o nome do anúncio no Meta. Score e respostas do bot seguem a mesma regra da origem: lead primeiro, contato como reserva. |
+| **Criativo** | O **código da célula** da grade do Trilha-briefing no `utm_content`, depois da régua das UTMs: o que vem antes de " \| ", se seguir o padrão (`[A-Z0-9]{2,8}`, como `PT01`; editável por cliente em `crm.padrao_codigo`). Fora do padrão conta como **sem código**, e passar de 20% dos leads de mídia paga vira sinal. Os custos por criativo usam o gasto de cada código no período. |
 | **Leads de mídia paga** | Leads com canal Meta Ads ou Google Ads. É o divisor dos custos. |
 
 ## Funil
