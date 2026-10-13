@@ -5,7 +5,7 @@
 
 ## 1. Espaço padrão
 
-Segue a estrutura que a Trilha já usa (a mesma do briefing-trilha): um **espaço de clientes** com **uma pasta por cliente** e a lista padrão **"Operação"**. As listas abaixo são as que o sistema usa dentro da pasta de cada cliente; o ID do espaço vai em `CLICKUP_CLIENTS_SPACE_ID`. Cliente sem pasta (uma lista só) é aceito com `CLICKUP_CLIENT_MODE=list`; itens arquivados são ignorados.
+Segue a estrutura que a Trilha já usa (a mesma das ferramentas da equipe): um **espaço de clientes** com **uma pasta por cliente** e a lista padrão **"Operação"**. As listas abaixo são as que o sistema usa dentro da pasta de cada cliente; o ID do espaço vai em `CLICKUP_CLIENTS_SPACE_ID`. Cliente sem pasta (uma lista só) é aceito com `CLICKUP_CLIENT_MODE=list`; itens arquivados são ignorados.
 
 ```
 Espaço de clientes
@@ -20,7 +20,7 @@ Espaço de clientes
 └── Lista "Decisões"                 ← o que o assessor decidiu → o que aconteceu, todas as contas
 ```
 
-A tarefa de onboarding que o briefing-trilha cria na "Operação" ("Briefing — <oferta>", tags `briefing` e `imobiliário`, um JSON de fluxo anexado por fluxo) é diferente do pacote de dados do briefing de criativo, que vai para "Briefings". Quem lê o ClickUp (painel da carteira) distingue as duas pela lista.
+A tarefa de onboarding criada na "Operação" ("Briefing — <oferta>", tags `briefing` e `imobiliário`, um JSON de fluxo anexado por fluxo) é diferente do pacote de dados do briefing de criativo, que vai para "Briefings". Quem lê o ClickUp (painel da carteira) distingue as duas pela lista.
 
 Demais listas da operação (demandas do cliente, criação, onboarding) seguem o padrão da equipe e são alimentadas pela **automação paralela de captura de tarefas** ([ecossistema](../ecossistema.md)), não por este sistema.
 
@@ -57,4 +57,4 @@ Tarefa semanal em "Carteira": semáforo por cliente, freio acionado na semana, t
 
 ## 7. Implementação
 
-API v2 do ClickUp (`https://api.clickup.com/api/v2`) com o token no cabeçalho `Authorization`, sem "Bearer". Variáveis iguais às do briefing-trilha: `CLICKUP_API_TOKEN`, `CLICKUP_TEAM_ID`, `CLICKUP_CLIENTS_SPACE_ID`, `CLICKUP_CLIENT_MODE`, `CLICKUP_DEFAULT_LIST_NAME`. Webhooks do ClickUp com assinatura conferida (`CLICKUP_WEBHOOK_SECRET`). Lista procurada pelo nome (sem diferenciar maiúsculas); se não existir, o fluxo **para e avisa**, nunca publica na primeira lista da pasta (o briefing-trilha faz esse fallback e pode publicar no lugar errado). Os gatilhos rodam nos fluxos do n8n ([n8n](n8n.md)); a decisão de executar (estado "antes" igual, valor dentro do teto contratado) passa pela trilha-api.
+API v2 do ClickUp (`https://api.clickup.com/api/v2`) com o token no cabeçalho `Authorization`, sem "Bearer". Variáveis iguais às das ferramentas da equipe: `CLICKUP_API_TOKEN`, `CLICKUP_TEAM_ID`, `CLICKUP_CLIENTS_SPACE_ID`, `CLICKUP_CLIENT_MODE`, `CLICKUP_DEFAULT_LIST_NAME`. Webhooks do ClickUp com assinatura conferida (`CLICKUP_WEBHOOK_SECRET`). Lista procurada pelo nome (sem diferenciar maiúsculas); se não existir, o fluxo **para e avisa**, nunca publica na primeira lista da pasta (a ferramenta de onboarding anterior fazia esse fallback e podia publicar no lugar errado). Os gatilhos rodam nos fluxos do n8n ([n8n](n8n.md)); a decisão de executar (estado "antes" igual, valor dentro do teto contratado) passa pela trilha-api.

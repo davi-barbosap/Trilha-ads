@@ -1,7 +1,7 @@
 """Esquema validado do perfil.yaml do cliente (núcleo §4, §7.2, §10; modelo-operacional.md).
 
-O perfil é o contrato entre o onboarding (wizard do briefing-trilha ou preenchimento
-manual) e o núcleo: nenhum módulo liga com um perfil que não passe por aqui.
+O perfil é o contrato entre o cadastro do cliente (parte exportada pelo Trilha-briefing, o resto
+preenchido pelo assessor) e o núcleo: nenhum módulo liga com um perfil que não passe por aqui.
 """
 
 from __future__ import annotations

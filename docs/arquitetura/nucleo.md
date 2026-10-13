@@ -4,7 +4,7 @@
 > Este documento reúne tudo o que é **comum a todas as plataformas**: estratégia, onboarding, perfil do cliente, brand kit, playbooks de segmento, conversão real, motores estatísticos, governança.
 > Módulos específicos: [Meta Ads](meta-ads.md) · [Google Ads](google-ads.md)
 > Status de implantação: [roadmap](../roadmap.md) · Métricas: [dicionário](../metricas.md) · Decisões: [`docs/decisoes/`](../decisoes/) · Integrações: [`docs/integracoes/`](../integracoes/)
-> Fonte do modelo de briefing de oferta e do playbook imobiliário: [`briefing-trilha`](https://github.com/beatriz-moraes082/briefing-trilha) — dependência formalizada em [ADR-005](../decisoes/005-dependencia-briefing-trilha.md).
+> Diagnóstico, estratégia e cadastro do cliente: [Trilha-briefing](https://github.com/davi-barbosap/Trilha-briefing) ([ADR-005](../decisoes/005-cadastro-pelo-trilha-briefing.md)). Copy dos anúncios: [Trilha-copy](https://github.com/davi-barbosap/Trilha-copy). Landing pages: [Trilha-LP](https://github.com/davi-barbosap/Trilha-LP).
 
 ## 1. Princípios
 
@@ -59,7 +59,7 @@
 
 ## 3. Camada 0 — Diagnóstico e estratégia
 
-Roda no onboarding de todo cliente e é revisada a cada trimestre. Produz cinco saídas antes de qualquer campanha: economia unitária, nota de maturidade, auditoria, plano de 90 dias e diagnóstico de aderência da oferta.
+Roda no onboarding de todo cliente e é revisada a cada trimestre. **As decisões são tomadas e registradas no [Trilha-briefing](https://github.com/davi-barbosap/Trilha-briefing)** (economia, maturidade, estratégia, marcos, hipóteses). Este sistema usa o resultado: a calculadora é a mesma nos dois (um teste de contrato confere que os números batem), a aderência da oferta é conferida pelo `validar` e a auditoria técnica é deste sistema (ainda a fazer).
 
 ### 3.1 Calculadora de economia unitária (matemática reversa)
 
@@ -95,6 +95,8 @@ Validação: taxa de qualificação ≥ agendamento ≥ fechamento; quando o cli
 
 ### 3.2 Nota de maturidade
 
+Registrada no Trilha-briefing (`pesquisa.yaml`, bloco `maturidade`), com esta régua.
+
 | Dimensão | 0 | 1 | 2 | 3 |
 |---|---|---|---|---|
 | Rastreamento | nada | pixel/tag básico | eventos + API de Conversões/tag avançada | conversão real retornando à plataforma |
@@ -110,6 +112,8 @@ A nota **liga e desliga módulos** e define regras: um cliente com rastreamento 
 Checklist técnico por plataforma (pixel/API de Conversões, tag, eventos, estrutura, nomenclatura, políticas, acessos, histórico de reprovações), gerado automaticamente onde houver acesso de leitura. Saída: lista priorizada de correções.
 
 ### 3.4 Plano de 90 dias
+
+O plano de cada cliente é decidido no Trilha-briefing (estratégia e marcos). As fases abaixo são a referência que ele segue.
 
 | Fase | Duração típica | Objetivo | Meta |
 |---|---|---|---|
@@ -149,22 +153,17 @@ O sistema sempre informa **o que está usando como padrão** e qual o impacto de
 
 ### 4.2 Onboarding (ferramenta paralela)
 
-O onboarding acontece no wizard do `briefing-trilha` (Streamlit, validação por etapa, avisos contextuais, publicação no ClickUp) — uma **ferramenta paralela** ([ecossistema](../ecossistema.md)). Este sistema só exige que o resultado passe no `python -m trilha validar`. O `briefing-trilha` pertence a outro repositório; a forma de consumo (versão fixada, contrato de dados, responsável) está em [ADR-005](../decisoes/005-dependencia-briefing-trilha.md). O contrato entre os dois é o esquema validado do perfil: o wizard produz YAML, o Trilha valida. Uma reunião com o cliente gera de uma vez:
+O cadastro do cliente vem do [Trilha-briefing](https://github.com/davi-barbosap/Trilha-briefing) (`exportar --para trilha`), que grava em `Trilha-clientes/ads/<id>/`. Este sistema só exige que o resultado passe no `python -m trilha validar`. O contrato entre os dois é o esquema validado; a forma de consumo está em [ADR-005](../decisoes/005-cadastro-pelo-trilha-briefing.md). O briefing gera:
 
 | Saída | Usada neste sistema por | Também usada por (paralelas) |
 |---|---|---|
-| `marca.yaml` | relatórios, pacote de briefing, verificador de copy dos anúncios | landing pages, fluxos de atendimento |
-| `ofertas/<oferta>.yaml` | pacote de briefing (diferenciais, objeções) | landing pages, fluxos Kommo |
-| `perfil.yaml` | metas, conversão real, freio, agenda dos materiais | — |
-| Fluxos Kommo (JSON) | — | atendimento (`build_kommo_json.py`) |
+| `marca.yaml` | pacote de briefing de criativo (ainda não lido: o validar não confere este arquivo) | — |
+| `ofertas/<oferta>.yaml` | diagnóstico de aderência, pacote de briefing (diferenciais, objeções) | fluxos Kommo |
+| `perfil.parcial.yaml` | economia, métrica principal e verba; o assessor completa contas, Kommo e freio e salva como `perfil.yaml` | — |
 
-Etapas que o wizard precisa ganhar para produzir um `perfil.yaml` completo:
-1. Negócio e economia unitária (§3.1)
-2. Maturidade (§3.2)
-3. Identidade visual e voz da marca (§5.1)
-4. Plataformas, contas e acessos
-5. Métrica principal, metas e sazonalidade
-6. Entrega de relatórios e alertas
+Copy e páginas não passam por aqui: o briefing exporta direto para o [Trilha-copy](https://github.com/davi-barbosap/Trilha-copy) (`copy.yaml`) e para a [Trilha-LP](https://github.com/davi-barbosap/Trilha-LP) (`pagina.yaml`). Os fluxos do Kommo (salesbots e etapas) são da ferramenta paralela de fluxos de CRM.
+
+O que o briefing ainda não exporta e o assessor preenche no `perfil.yaml`: contas e IDs das plataformas, mapa de etapas do Kommo (`crm.mapa_eventos`), regras do freio e entrega de relatórios e alertas.
 
 ### 4.3 Versionamento do perfil
 
@@ -172,7 +171,7 @@ Metas, ofertas e condições comerciais mudam. Cada alteração no perfil gera n
 
 ## 5. Brand kit
 
-Hierarquia em três níveis. O nível **oferta** segue o molde do briefing de empreendimento do `briefing-trilha`, generalizado para qualquer segmento.
+Hierarquia em três níveis, para qualquer segmento.
 
 ```
 MARCA      identidade, voz, compliance, regras comerciais — vale para tudo
@@ -227,7 +226,7 @@ Regra de derivação: a **assinatura** define a pessoa gramatical e o formato cr
 
 ### 5.2 `ofertas/<oferta>.yaml`
 
-Generalização das etapas 2–7 e 10 do wizard do `briefing-trilha`:
+Formato que o Trilha-briefing exporta (`exportar --para trilha`):
 
 ```yaml
 oferta:
@@ -274,16 +273,7 @@ assets:
 
 ### 5.3 Verificador de copy
 
-Roda sobre a copy de **anúncios** (Meta e RSA do Google) escrita pelo assessor, antes de subir. Páginas e mensagens de WhatsApp são de ferramentas paralelas, que podem reaproveitar as mesmas regras.
-
-| Verificação | Origem |
-|---|---|
-| Afirmação sem número, fato ou nome próprio → bloquear ou pedir dado | princípio de concretude do briefing-trilha |
-| Termo proibido / promessa proibida / preço fora da regra do canal | `marca.yaml` |
-| Pessoa gramatical incoerente com a assinatura | `marca.yaml` |
-| Registro profissional ausente quando obrigatório | `compliance` |
-| Limites de caracteres e políticas da plataforma | módulo da plataforma |
-| Coerência com a oferta | `ofertas/` |
+Feito pelo [Trilha-copy](https://github.com/davi-barbosap/Trilha-copy), que revisa os anúncios de Meta e Google e os roteiros contra o briefing: termos e promessas proibidos, lastro de números e provas, urgência real, limites e políticas de cada plataforma, voz e intensidade. Só peça aprovada sai, com o código da célula em `utm_content`.
 
 ### 5.4 Taxonomia de ângulos (liga brand kit e motores)
 
@@ -307,14 +297,14 @@ playbooks/<segmento>/
 └── (fluxos de atendimento ficam na ferramenta paralela de fluxos de CRM)
 ```
 
-**Imobiliário (primeiro playbook)** — derivado do `briefing-trilha`; arquivo em [`playbooks/imobiliario/playbook.yaml`](../../playbooks/imobiliario/playbook.yaml):
+**Imobiliário (primeiro playbook)** — arquivo em [`playbooks/imobiliario/playbook.yaml`](../../playbooks/imobiliario/playbook.yaml):
 - `modelo_receita: comissao` por padrão — a receita é a comissão retida, não o valor do imóvel.
 - Taxas padrão conservadoras: fechamento 1%, qualificação 25%, agendamento 5% (sempre marcadas como estimadas).
 - **Portais imobiliários** (ZAP, VivaReal, OLX e similares) são fonte de lead de primeira classe: entram no Kommo com origem própria, contam no CAC total e na visão consolidada, e servem de referência de custo por lead para comparar com mídia paga.
 - Eixos: preço, produto, localização — todos obrigatórios na régua.
 - Regra padrão: preço pedido no WhatsApp → simulação/agendamento, nunca valor fechado. Em anúncio, configurável (ex.: valor de parcela pode filtrar lead).
 - Compliance: CRECI; verificar regras de categoria especial de anúncio para habitação conforme país e plataforma.
-- Reaproveita do briefing-trilha: `objecoes_e_apelos.md` (pacote de briefing). Fluxos de atendimento e `build_kommo_json.py` seguem no briefing-trilha (paralelo).
+- Fluxos de atendimento e salesbots do Kommo ficam na ferramenta paralela de fluxos de CRM.
 
 Próximos playbooks: educação, serviço local, saúde, e-commerce — mesmo molde, com eixos próprios (ex.: educação → preço, resultado, método/tempo).
 
@@ -489,7 +479,7 @@ Legenda: ✅ existe · ⬜ previsto no [roadmap](../roadmap.md).
 ├── README.md
 ├── pyproject.toml · .env.example · .gitignore · .github/workflows/testes.yml
 ├── docs/
-│   ├── ecossistema.md · modelo-operacional.md · raio-x-do-funil.md · metricas.md · origem-dos-padroes.md · roadmap.md
+│   ├── ecossistema.md · modelo-operacional.md · raio-x-do-funil.md · metricas.md · roadmap.md
 │   ├── arquitetura/           ✅ nucleo.md · meta-ads.md · google-ads.md
 │   ├── decisoes/              ✅ ADRs 001–008
 │   └── integracoes/           ✅ n8n.md · kommo.md · clickup.md · ferramentas.md
@@ -510,7 +500,7 @@ Legenda: ✅ existe · ⬜ previsto no [roadmap](../roadmap.md).
 └── clientes/_exemplo/         ✅ perfil.yaml · marca.yaml · ofertas/
 ```
 
-Clientes reais: repositório privado `trilha-clientes` (mesma estrutura de `clientes/_exemplo/`), montado na trilha-api em `/clientes`.
+Clientes reais: repositório privado Trilha-clientes, pasta `ads/` (mesma estrutura de `clientes/_exemplo/`), montada na trilha-api pela variável `TRILHA_CLIENTES_DIR`.
 
 ## 13. Roadmap
 

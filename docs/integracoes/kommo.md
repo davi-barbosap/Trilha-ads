@@ -115,9 +115,9 @@ crm:
 
 | Leitura | Tags padrão | Origem na operação |
 |---|---|---|
-| bot concluído | `bot-concluído`, `Interesse Confirmado` | salesbot do IMR; fluxos do briefing-trilha |
-| bot incompleto | `bot-incompleto` | rotina de tags do IMR/IBR |
-| bot não iniciado | `bot-nao-iniciado` (sem acento), `lead frio` | salesbot do IMR; pré-atendimento escalonado |
+| bot concluído | `bot-concluído`, `Interesse Confirmado` | salesbot de pré-atendimento; fluxos da equipe |
+| bot incompleto | `bot-incompleto` | rotina de tags dos clientes |
+| bot não iniciado | `bot-nao-iniciado` (sem acento), `lead frio` | salesbot de pré-atendimento; pré-atendimento escalonado |
 | interagiu | `Interagiu` | rotina de tags (humano escreveu e o lead respondeu depois) |
 | qualificado | `lead-qualificado` | time do cliente |
 | reunião agendada | `reunião-agendada`, `reagendar-reunião`, `visita-agendada` | time do cliente |

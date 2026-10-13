@@ -39,9 +39,9 @@ DIAS_BASE_VELHA = 30
 PRIMEIRO_CONTATO_MAXIMO_MIN = 30 * 24 * 60  # acima disso (ou negativo) é erro de registro, não tempo de resposta
 # "Responsáveis" que são baldes do sistema, não pessoas.
 PSEUDO_RESPONSAVEIS = {"descarte", "sem corretor", "sem responsável", "(sem corretor)", "sem responsavel"}
-# Perfil por pessoa: pesos das dimensões (ranking-corretores-lion), notas relativas ao time.
+# Perfil por pessoa: pesos das dimensões (painel de ranking do time comercial), notas relativas ao time.
 PESOS_PERFIL = {"vendas": 28, "conversao": 20, "volume": 16, "primeiro_contato": 16, "movimentacao": 10, "consistencia": 10}
-# Distribuição de leads entre pessoas (maia-dash): desequilíbrio a partir de 1,6× ou até 0,5× a média.
+# Distribuição de leads entre pessoas (painel de distribuição de leads): desequilíbrio a partir de 1,6× ou até 0,5× a média.
 DISTRIBUICAO_ALTA, DISTRIBUICAO_BAIXA, DISTRIBUICAO_MEDIA_MINIMA = 1.6, 0.5, 3
 
 

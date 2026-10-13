@@ -12,11 +12,12 @@ O sistema entra em operação num cliente piloto, é testado na prática e depoi
 - ✅ **Raio-x do funil**: etapa por etapa, primeiro contato, cadência, perdas por categoria e momento, maior vazamento, marketing entregou × comercial converteu, atribuição pelo Kommo (`python -m trilha raio-x`, `POST /funil/raio-x`)
 - ✅ Calculadora de economia unitária (CAC, CPL e CPL qualificado máximos, verba por degrau)
 - ✅ Leitura do Kommo com confirmação da etapa real do lead
-- ✅ Conversões para o Meta (API de Conversões v26.0) e para o Google (Data Manager API), com hash e deduplicação
+- ✅ Conversões para o Meta (API de Conversões v26.0), com hash e deduplicação; o envio real só roda com `TRILHA_SIMULAR=0` e ainda não foi usado em produção
+- 🟡 Conversões para o Google (Data Manager API): o payload está pronto e testado; o envio ainda não está implementado (item 3 abaixo)
 - ✅ Regras do freio de emergência e da saúde das contas (status, dias de saldo, recarga, anúncios com problema, alertas técnicos com dono próprio, várias contas por cliente)
 - ✅ Régua de métricas da Trilha ([métricas](metricas.md)), da leitura completa dos repositórios da operação: vários funis com o papel de cada um, etapas de saída, tags reais do Kommo, deduplicação de leads e vendas, canal normalizado com apelidos do cliente, custos sobre mídia paga (teto/piso), primeiro contato humano em minutos de expediente, SDR × closer, perfil e distribuição por pessoa, chegada dos leads por hora, reativação, leads parados e base velha, sinais, correções confirmadas, comparação de períodos
 - ✅ trilha-api: `/saude`, `/clientes`, `/validar`, `/calcular`, `/conversao`, `/freio/avaliar`, `/funil/raio-x`, `/contas/saude`, com segredo de webhook por cliente
-- ✅ Fluxos-modelo do n8n: W01 (conversão real) e W10 (vigia de falhas)
+- ✅ Fluxos-modelo do n8n: W01 (conversão real) e W10 (vigia de falhas), em `n8n/modelos/`; nenhum fluxo está importado num servidor
 - ✅ Infraestrutura descrita em `infra/` (n8n 2.x, Postgres, Redis, trilha-api, HTTPS, backup)
 - ✅ 96 testes e verificação automática no GitHub
 
@@ -35,6 +36,12 @@ O sistema entra em operação num cliente piloto, é testado na prática e depoi
 | 9 | **W11** pacote da reunião + **W14** painel da carteira | reunião mensal, alinhamento com a equipe | uma reunião preparada em ≤ 15 min; painel na véspera da reunião de equipe | ⬜ |
 | 10 | Entrada dos demais clientes | tudo | perfis válidos em `/clientes`; material de todos chegando na véspera | ⬜ |
 
+## Antes de operar, sem depender do n8n
+
+- ⬜ **Raio-x por código da célula** (`utm_content` = `PT01`…): leads, qualificados e vendas por criativo, e o gasto por anúncio quando houver coleta. Hoje o lead já chega com o código, mas o raio-x agrupa só por campanha. É o que permite concluir as hipóteses do briefing (PT01 contra PT02).
+- ⬜ Ler `landing_page` e `event_id_lead`, que a Trilha-LP já grava no Kommo: raio-x por versão de página e deduplicação do `Lead` com o do navegador.
+- ⬜ Validar o `marca.yaml` que o Trilha-briefing exporta (hoje chega e não é lido).
+
 ## Depois de operar
 
 Sem prazo. Cada item entra quando a operação mostrar que vale a pena.
@@ -44,11 +51,10 @@ Sem prazo. Cada item entra quando a operação mostrar que vale a pena.
 - Auditoria de onboarding automatizada (Meta, Google, desperdício em termos de pesquisa).
 - Varredura de termos de pesquisa do Google como ponto de atenção no dossiê.
 - Painel MTD no Looker Studio e calendário sazonal.
-- Verificador de copy dos anúncios.
 - Estatística avançada (quando algum cliente tiver 20+ conversões por dia) e vencedores por argumento.
 - Novos segmentos e plataformas (TikTok, LinkedIn). A carteira já tem automotivo e hotelaria: playbooks desses segmentos a partir dos relatórios de cada cliente.
 - Alinhar os painéis de mensuração por cliente ao [dicionário de métricas](metricas.md) e, depois, fazê-los ler os dados do sistema.
 
 ## Em paralelo (fora deste repositório)
 
-BotConversa · GA4/GTM · landing pages · disparos em massa · fluxos de CRM no Kommo · captura de tarefas no ClickUp · onboarding (briefing-trilha). Ver [ecossistema](ecossistema.md).
+BotConversa · GA4/GTM · disparos em massa · fluxos de CRM no Kommo · captura de tarefas no ClickUp. Diagnóstico e estratégia: [Trilha-briefing](https://github.com/davi-barbosap/Trilha-briefing). Copy dos anúncios: [Trilha-copy](https://github.com/davi-barbosap/Trilha-copy). Landing pages: [Trilha-LP](https://github.com/davi-barbosap/Trilha-LP). Ver [ecossistema](ecossistema.md).

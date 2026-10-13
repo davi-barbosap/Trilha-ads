@@ -135,7 +135,7 @@ Horas do assessor por cliente por semana:
 - **8 clientes ≈ 30 h por semana** com o sistema, contra ~60 h sem ele.
 - **Teto saudável: cerca de 10 clientes por assessor.** O sistema corta o trabalho de levantar e organizar dados; o relacionamento e a execução criativa continuam tomando tempo, e é assim que deve ser.
 - Estimativas de partida, a confirmar com as horas medidas no cliente piloto.
-- A carteira de hoje (catálogo do `trilha-painel`): 23 clientes em dois assessores, um com 16 e outro com 7 (imobiliário 17, automotivo 3, hotelaria 3). O assessor com 16 está acima do teto mesmo com o sistema.
+- A carteira de hoje (catálogo do painel da carteira): 23 clientes em dois assessores, um com 16 e outro com 7 (imobiliário 17, automotivo 3, hotelaria 3). O assessor com 16 está acima do teto mesmo com o sistema.
 
 ## 6. Agenda de referência para 8 clientes
 

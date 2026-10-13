@@ -1,6 +1,6 @@
 # Dicionário de métricas da Trilha
 
-> Fonte: leitura completa dos repositórios da operação (`mensuracao-ibr`, `mensuracao-mme`, `trilha-painel`, `ranking-corretores-lion`, `ni-report`, `maia-dash`, `bossa-site`, `briefing-trilha`). Ver [origem dos padrões](origem-dos-padroes.md).
+> Fonte: leitura completa dos repositórios de mensuração, atendimento e painéis da operação (out/2026).
 > Implementação: `trilha/core/funil.py` (raio-x), `trilha/core/atribuicao.py` (canal), `trilha/core/saude.py` (contas), `trilha/core/periodo.py` (comparações), `trilha/core/correcoes.py` (correções confirmadas).
 
 Todo número que o sistema mostra (dossiê, relatório, pacote da reunião, painel) segue estas definições. Painel de cliente que usa outra regra precisa ser alinhado a esta. Se um cliente exigir outra régua, ela vira um campo explícito do perfil, nunca uma divergência silenciosa.
@@ -57,11 +57,11 @@ Canais sem gasto medido (orgânico, indicação, não rastreado) ficam com custo
 
 | Métrica | Definição |
 |---|---|
-| **Primeiro contato** | Da entrada do lead à **primeira mensagem de saída enviada por uma pessoa** (Kommo: `outgoing_chat_message`, `entity_direct_message` ou `outgoing_mail` com `created_by` ≠ 0; mensagem de bot e de automação não conta, e no IMR são 2 de cada 3). Sem esse evento, a entrada em atendimento; sem ela, a qualificação. Tempo negativo ou de 30 dias ou mais é erro de registro e fica fora. |
+| **Primeiro contato** | Da entrada do lead à **primeira mensagem de saída enviada por uma pessoa** (Kommo: `outgoing_chat_message`, `entity_direct_message` ou `outgoing_mail` com `created_by` ≠ 0; mensagem de bot e de automação não conta, e num dos clientes lidos são 2 de cada 3). Sem esse evento, a entrada em atendimento; sem ela, a qualificação. Tempo negativo ou de 30 dias ou mais é erro de registro e fica fora. |
 | **Prazo de primeiro contato** | Medido em **minutos de expediente** (`crm.horario_comercial`: dias, início, fim e fuso): lead que chega às 23h e recebe a primeira mensagem às 8h05 esperou 5 minutos. O tempo corrido aparece ao lado. `crm.sla_primeiro_contato_min` vem do briefing (30 min → 30, 2 h → 120, 24 h+ → 1440). |
 | **Chegada dos leads** | Mapa dia da semana × hora (horário do cliente), % fora do horário comercial, % à noite, % no fim de semana e o pico. É a base do plantão e do prazo de contato. |
-| **Interagiu (resgate)** | Houve mensagem de chat enviada **por um humano** e o lead respondeu **depois** dela (`incoming_chat_message` posterior). Resposta espontânea ao bot não conta. Funis de entrada e nutrição. A regra nativa do Kommo ("mensagem recebida em qualquer canal") errava 298 de 535 casos e foi desligada no IMR. |
-| **Pré-atendimento (bot)** | Tags exclusivas: `bot-concluído` (respondeu até a última pergunta) · `bot-incompleto` (respondeu ao menos uma) · `bot-nao-iniciado` (nunca respondeu; grafia real, sem acento). Com mais de uma tag vale concluído > incompleto > não iniciado. Nos fluxos do briefing-trilha, "Interesse Confirmado" equivale a concluído e "lead frio" a não iniciado. Lead sem nenhuma dessas tags fica fora da base do bot. O raio-x mostra também a qualificação de cada grupo. |
+| **Interagiu (resgate)** | Houve mensagem de chat enviada **por um humano** e o lead respondeu **depois** dela (`incoming_chat_message` posterior). Resposta espontânea ao bot não conta. Funis de entrada e nutrição. A regra nativa do Kommo ("mensagem recebida em qualquer canal") errava 298 de 535 casos no cliente em que foi medida e foi desligada lá. |
+| **Pré-atendimento (bot)** | Tags exclusivas: `bot-concluído` (respondeu até a última pergunta) · `bot-incompleto` (respondeu ao menos uma) · `bot-nao-iniciado` (nunca respondeu; grafia real, sem acento). Com mais de uma tag vale concluído > incompleto > não iniciado. Nos fluxos de pré-atendimento da equipe, "Interesse Confirmado" equivale a concluído e "lead frio" a não iniciado. Lead sem nenhuma dessas tags fica fora da base do bot. O raio-x mostra também a qualificação de cada grupo. |
 | **Leads parados** | Leads ativos (sem venda nem perda) sem movimentação há mais de `crm.dias_parado` dias (padrão 15), por responsável, com a **carteira parada** (% dos ativos da pessoa). Acima de `crm.dias_base_velha` (padrão 30) é **base velha**. Parado sem responsável aparece marcado, não some. No painel da carteira a leitura é sobre uma janela fixa de 45 dias de entrada, independente do período do relatório. |
 | **Distribuição** | Leads da pessoa ÷ média do time (sem baldes e sem gestores). Desequilibrada a partir de 1,6× ou até 0,5× a média, quando a média é de 3 leads ou mais. |
 | **Perfil por pessoa** | Nota de 0 a 100 relativa ao time no período (100 = o melhor do time, não uma meta). Dimensões e pesos: vendas 28 · conversão (vendas ÷ leads da safra) 20 · volume 16 · primeiro contato 16 · movimentação (saiu de novo lead) 10 · consistência (menos parados) 10. Empate = 50; sem dado = nota do pior. Só entra quem tem amostra: SDR com 20+ leads, closer com 5+ reuniões. |
@@ -72,7 +72,7 @@ Canais sem gasto medido (orgânico, indicação, não rastreado) ficam com custo
 
 | Métrica | Definição |
 |---|---|
-| **Lead score** | Classificação feita pelo bot ou pela régua do CRM do cliente. A escala é do cliente e varia (régua A–D no IMR, campo A–F no Kommo do IMR, A–E com "Revisar" no IBR). O sistema lê o score gravado, não recalcula. Quando o fechamento reavalia, vale o score final. O funil por score é em coorte e mostra **"sem score"** como grupo visível. |
+| **Lead score** | Classificação feita pelo bot ou pela régua do CRM do cliente. A escala é do cliente e varia (A–D na régua de um cliente e A–F no campo do Kommo do mesmo cliente; A–E com "Revisar" em outro). O sistema lê o score gravado, não recalcula. Quando o fechamento reavalia, vale o score final. O funil por score é em coorte e mostra **"sem score"** como grupo visível. |
 
 ## Períodos e comparações
 
@@ -82,7 +82,7 @@ Canais sem gasto medido (orgânico, indicação, não rastreado) ficam com custo
 - **Eventos datados:** reunião pela data em que aconteceu, venda pela data de fechamento. O raio-x de safra (leads que entraram no período) e os indicadores do período (eventos que aconteceram no período) são leituras diferentes e aparecem identificadas.
 - **Janela que começa antes da primeira mídia veiculada:** métricas financeiras com ressalva (CPL e CAC subestimados, retorno superestimado).
 - **Períodos com apagão de rastreio** ficam fora do comparativo de CPL (mediriam o rastreio, não a mídia), mas os leads seguem contados.
-- **Metas do cliente:** cada meta declara a base. "Agendamento 40%" do IMR é agendados ÷ **leads**; o raio-x calcula cada passagem sobre a etapa anterior. Comparar sem dizer a base é erro.
+- **Metas do cliente:** cada meta declara a base. "Agendamento 40%" de um dos clientes é agendados ÷ **leads**; o raio-x calcula cada passagem sobre a etapa anterior. Comparar sem dizer a base é erro.
 
 ## Correções confirmadas
 

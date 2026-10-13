@@ -1,47 +1,101 @@
-# Trilha
+# Trilha-ads
 
-Sistema que executa o trabalho manual por trás dos serviços de mídia paga (Meta Ads e Google Ads) da Trilha, para que o assessor de marketing gaste o tempo dele pensando, decidindo e cuidando do cliente.
+Execução e medição dos serviços de mídia paga da Trilha (Meta Ads e Google Ads). O sistema faz o trabalho manual e demorado do assessor: coletar, conferir, calcular, devolver a venda às plataformas e montar o material das reuniões. Assim o assessor gasta o tempo pensando, decidindo e cuidando do cliente.
 
-## O que é
+O sistema **não decide estratégia nem verba, não cria campanhas e não fala com o cliente.** Serve para qualquer segmento; o playbook de um segmento muda só os nomes e as referências.
 
-Um assessor que atende vários clientes passa boa parte da semana em tarefas braçais: abrir o Gerenciador de Anúncios e o Google Ads, copiar números, conferir no Kommo quantos leads realmente viraram oportunidade, montar planilhas, comparar com a meta, levantar dados para o briefing e preparar a reunião do mês.
+> **Situação:** o núcleo de cálculo está pronto e testado. **Nada está em operação ainda.** A coleta diária, os relatórios, o dossiê e a integração com o ClickUp dependem dos fluxos do n8n, que ainda não foram criados. Detalhes em [Situação atual](#situação-atual).
 
-O Trilha faz esse trabalho. Ele **não pensa a estratégia, não decide verba e não fala com o cliente** — isso é do assessor.
+## Ecossistema Trilha
 
-## A régua da Trilha
+| Etapa | Repositório | Papel |
+|---|---|---|
+| 1. Diagnóstico e planejamento | [Trilha-briefing](https://github.com/davi-barbosap/Trilha-briefing) | entende o cliente e decide a estratégia; é a fonte de tudo o que as outras ferramentas usam |
+| 2. Copy | [Trilha-copy](https://github.com/davi-barbosap/Trilha-copy) | estrutura e revisa os textos dos anúncios, fiel ao briefing |
+| 3. Página | [Trilha-LP](https://github.com/davi-barbosap/Trilha-LP) | landing page com o rastreamento que leva a origem do lead até o Kommo |
+| 4. Execução e medição | **Trilha-ads (este)** | coleta, confere e calcula: raio-x do funil, conversão real, freio, material das reuniões |
+| Dados dos clientes | Trilha-clientes (privado) | os arquivos reais de cada cliente; este sistema lê a pasta `ads/` |
 
-A maioria das operações olha para as duas pontas: quantos leads entraram e quantas vendas saíram. O que acontece no meio é tratado no achismo — e é aí que se decide aumentar verba quando o vazamento está no atendimento, ou cobrar o marketing por venda quando ele já entregou volume, qualidade e visita.
+O código da célula da grade (`PT01`, `GB01`…) amarra as etapas: nasce na grade do briefing, vai no anúncio como `utm_content` e na mensagem do WhatsApp da página, e chega ao lead no Kommo. **Este sistema ainda não agrupa os resultados por esse código**; está no [roadmap](docs/roadmap.md).
 
-Por isso o Trilha mede **o funil inteiro, etapa por etapa**, e trata **venda e valor vendido como resultado**. CPL é diagnóstico: custo por lead baixo com lead que não fecha é prejuízo disfarçado de eficiência.
+## O que faz
 
-## O que faz na prática
+### Pronto no código, com testes
 
-**Todos os dias, sozinho**
-- **Raio-x do funil.** Para cada cliente, mostra quantos leads passaram por cada etapa (novo lead → em atendimento → qualificado → agendado → compareceu → proposta → venda), quanto tempo o time comercial do cliente leva para o primeiro contato (só conta mensagem de uma pessoa, não do bot, em horário de expediente), quantas tentativas faz antes de desistir, onde e por que os leads são perdidos — separando perda por qualidade do lead, por atendimento, comercial ou externa — e **qual etapa está vazando mais vendas e quanto isso custa em R$**. Mostra lado a lado o que o **marketing entregou** e o que o **comercial converteu**, separa SDR e closer, compara as pessoas do time (perfil, distribuição de leads, carteira parada), mostra a que horas os leads chegam, aponta leads parados há mais de 15 dias e segue a régua de métricas da Trilha (a mesma pessoa conta uma vez por mês, CPL só sobre mídia paga, custo por venda como teto e retorno como piso). Entende operações com vários funis no Kommo (SDR, Closer, Nutrição), em que o "ganho" de um funil não é venda, e lê as tags reais da operação (estado do bot, reunião realizada, reativado). Vale para qualquer segmento; o imobiliário só muda os nomes (visita agendada, visita realizada).
-- **Devolve a venda real para o Meta e o Google.** Quando o lead muda de etapa no Kommo (qualificado, visita, venda), o sistema avisa as plataformas. Assim elas aprendem a buscar gente parecida com quem compra, não só com quem clica.
-- **Coleta e confere os números** de Meta, Google e Kommo, e acompanha se a verba do mês vai sobrar ou faltar.
-- **Avisa só o que é urgente:** anúncio reprovado, campanha parada, rastreamento quebrado, conta de anúncio desativada, com pagamento pendente ou com saldo pré-pago para menos de 5 dias (com a recarga sugerida), anúncio com problema de entrega. Alerta técnico (credencial recusada, coleta parada) vai para o responsável técnico, uma vez só.
-- **Freio de emergência:** se uma campanha está gastando sem trazer nenhum lead, ou com o rastreamento quebrado, pausa e avisa na hora, com um botão para desfazer. É a única coisa que o sistema faz sem pedir. Reativar é sempre decisão do assessor.
+| Capacidade | Comando · rota da API | O que entrega |
+|---|---|---|
+| **Validação do cliente** | `validar` · `POST /validar` | Confere `perfil.yaml` e `ofertas/` contra o esquema. Lista as etapas do funil sem mapa no Kommo, as perguntas do diagnóstico de aderência da oferta sem resposta e os sinais de risco da oferta. |
+| **Metas pela economia unitária** | `calcular` · `POST /calcular` | CAC, CPL e CPL qualificado máximos. Calcula a verba mensal para a plataforma aprender em cada degrau (lead, qualificado, agendamento, venda) e mostra quais degraus a verba sustenta. |
+| **Raio-x do funil** | `raio-x` · `POST /funil/raio-x` | Mostra cada etapa contra a referência do playbook e o maior vazamento, em vendas e em R$. Separa as perdas por categoria (qualidade do lead, atendimento, comercial, externa). Mede o primeiro contato humano em minutos de expediente e a cadência. Põe lado a lado o que o marketing entregou e o que o comercial converteu, compara SDR e closer, traça o perfil de cada pessoa do time e aponta os leads parados. |
+| **Conversão real** | `simular-webhook` · `POST /conversao` | Quando o lead muda de etapa no Kommo, confirma a etapa lendo o Kommo e monta o evento para o Meta (API de Conversões) e o Google (Data Manager API), com hash e deduplicação. O envio ao Meta está implementado; ao Google, por enquanto, só o payload. |
+| **Freio de emergência** | `POST /freio/avaliar` | Duas regras: gasto desde o último lead de 3× o CPL máximo ou mais, e 6 h ou mais sem evento de conversão com a campanha gastando. Devolve a ação (pausar e avisar). Quem executa é o fluxo do n8n, com botão de desfazer. |
+| **Saúde das contas** | `POST /contas/saude` | Avisa dias de saldo pré-pago (prioridade 1 abaixo de 5 dias, 2 abaixo de 10), sugere a recarga para 30 dias e aponta anúncios reprovados e conta desativada ou com pagamento pendente. |
+| **Carteira** | `GET /clientes` | Os clientes válidos com a agenda de cada material, para os fluxos do n8n percorrerem. |
 
-**Na véspera de cada compromisso do assessor, deixa o material pronto no ClickUp**
+### Planejado: depende dos fluxos do n8n
 
-| Compromisso do assessor | O que o sistema deixa pronto |
-|---|---|
-| Otimização semanal de cada cliente | **Dossiê:** vendas e valor vendido da semana, o maior vazamento do funil, o que mudou na conta, o efeito das decisões anteriores e os pontos de atenção com os números de cada um |
-| Relatório semanal ao cliente | **Números** de leads (marketing entregou × comercial converteu, perdas por categoria), criativos e ações — para o assessor escrever a leitura dele e entregar |
-| Briefing para a equipe de criação | **Pacote de dados:** o que está convertendo, o que cansou, objeções e motivos de perda registrados no Kommo, riscos do diagnóstico de aderência da oferta |
-| Reunião mensal com o cliente | **Pacote da reunião:** resultado do mês (vendas, valor vendido, retorno), raio-x do funil por campanha e por responsável, testes, decisões e efeitos |
-| Reunião de equipe | **Painel da carteira:** situação e maior vazamento de cada cliente, freios acionados, pendências |
+| Material | Para qual compromisso do assessor | Fluxo |
+|---|---|---|
+| Coleta diária de Meta, Google e Kommo (gasto, leads, histórico de etapas, primeiro contato, tags) | base de todos os materiais | W02 |
+| Urgências, freio executado e pacing da verba | monitoramento | W03 · W04 |
+| Leitura diária da carteira no Slack | dia a dia | W05 |
+| **Dossiê da otimização semanal**: vendas e valor vendido da semana, maior vazamento, o que mudou na conta, efeito das decisões anteriores, pontos de atenção | sessão de otimização | W12 |
+| Execução do que o assessor aprovar no ClickUp | otimização | W06 |
+| **Números do relatório semanal**: marketing entregou × comercial converteu, perdas por categoria, criativos e ações | relatório ao cliente (o assessor escreve a leitura) | W07 |
+| Pacote de dados do briefing de criativo: o que converte, o que cansou, objeções e motivos de perda | briefing para a equipe de criação | W08 |
+| **Pacote da reunião mensal** e **painel da carteira** | reunião com o cliente e reunião de equipe | W11 · W14 |
 
-**Antes de anunciar,** o sistema exige o diagnóstico de aderência da oferta: quem já comprou, uso próprio ou investimento, flexibilidade de pagamento, reputação de quem entrega e como estão as vendas fora do digital. As respostas são do assessor; o sistema confere se foram dadas e leva os sinais de risco para o material.
+Nada sai do sistema direto para o cliente. Urgências vão para o Slack da operação e materiais chegam como tarefas no ClickUp, na véspera de cada compromisso.
 
-**O que continua sendo do assessor:** estratégia, decisões de verba e criativo, criação de campanhas, contatos proativos com o cliente, respostas no grupo, a leitura dos relatórios e a condução das reuniões.
+## Como faz
 
-**O que fica fora deste sistema** (ferramentas paralelas): landing pages, disparos em massa, fluxos de CRM, BotConversa, GA4/GTM e a captura de tarefas no ClickUp. Ver [ecossistema](docs/ecossistema.md).
+1. **Cadastro.** O Trilha-briefing exporta marca, ofertas e um perfil parcial para `Trilha-clientes/ads/<id>/`. O assessor completa o `perfil.yaml` (contas, mapa de etapas do Kommo, freio, agenda dos materiais) e o `validar` confere ([ADR-005](docs/decisoes/005-cadastro-pelo-trilha-briefing.md)).
+2. **Régua da Trilha.** Resultado é venda e valor vendido; CPL é diagnóstico. Os custos são calculados sobre a mídia paga, então o custo por venda é teto e o retorno é piso. Cada pessoa conta uma vez por mês, e o primeiro contato só conta mensagem de uma pessoa, não de bot ([métricas](docs/metricas.md)).
+3. **Funil padrão** para todos os segmentos: novo lead → em atendimento → qualificado → agendado → compareceu → proposta → venda. Cada perda tem motivo e categoria ([raio-x do funil](docs/raio-x-do-funil.md), [ADR-008](docs/decisoes/008-funil-padrao.md)).
+4. **Conversão real.** O webhook do Kommo chega à API, que confirma a etapa lendo o Kommo e envia o evento com hash. As plataformas passam a aprender com quem compra, não só com quem clica.
+5. **Orquestração.** O n8n autohospedado agenda e chama a trilha-api; a API é o núcleo testado, que calcula e decide ([ADR-002](docs/decisoes/002-n8n-orquestrador.md)).
+6. **Uma única ação automática:** o freio. Reativar é sempre decisão do assessor ([ADR-006](docs/decisoes/006-freio-de-emergencia.md)).
+
+**Entradas:**
+- `perfil.yaml`, `ofertas/` e `correcoes.yaml` do cliente;
+- o playbook do segmento;
+- o Kommo, pelo webhook e pela API;
+- depois da coleta, também Meta e Google.
+
+**Saídas:** raio-x em texto ou JSON, eventos de conversão e decisões do freio e da saúde em JSON, que o n8n consome.
+
+## O que não faz
+
+- Não pensa a estratégia, não decide verba, não cria campanhas nem anúncios e não fala com o cliente.
+- Não constrói página, fluxo de CRM ou disparo ([ecossistema](docs/ecossistema.md)).
+- Não mede o contato do assessor com o cliente. Ele mede o time comercial **do cliente**.
+- **Ainda não lê:**
+  - campanhas e anúncios do Meta e do Google (gasto, criativos);
+  - o código da célula por anúncio;
+  - o `marca.yaml`;
+  - os campos `landing_page` e `event_id_lead` que a Trilha-LP grava.
+
+## Situação atual
+
+- **Pronto:**
+  - esquemas do perfil e das ofertas;
+  - funil padrão e playbook do imobiliário;
+  - raio-x, calculadora e conversão para o Meta;
+  - regras do freio e da saúde;
+  - API, fluxos-modelo W01 e W10 e infraestrutura descrita em `infra/`.
+- **Falta para operar:**
+  - subir o servidor do n8n;
+  - pôr o Kommo do cliente piloto no padrão;
+  - criar os fluxos de coleta (W02) e de materiais (W03 a W14);
+  - implementar o envio ao Google.
+
+A ordem está no [roadmap](docs/roadmap.md).
+
+Estimativa do [modelo operacional](docs/modelo-operacional.md) §5: cerca de 3,75 h de trabalho do assessor por cliente por semana, contra cerca de 7,6 h sem o sistema, o que permitiria uns 10 clientes por assessor. É estimativa: só vai ser medida em operação.
 
 ## Exemplo
 
-Caso real da Trilha (imobiliário): **R$ 7.550 investidos, 425 leads, 4 vendas, R$ 7.084.000 em VGV.** O raio-x do exemplo em `tests/fixtures/` reproduz esses números — com etapas do meio ilustrativas — e mostra o tipo de leitura que o assessor recebe:
+Números de um cliente do imobiliário da operação, sem identificação: R$ 7.550 investidos, 425 leads, 4 vendas, R$ 7.084.000 em VGV. O raio-x de `tests/fixtures/` reproduz esses números, com as etapas do meio ilustrativas:
 
 ```
 Resultado: 4 vendas · R$ 7.084.000 vendidos · retorno de 938,3× o investimento
@@ -51,55 +105,53 @@ Maior vazamento: Visita realizada (comercial) — 50,0% contra 65,0% de referên
 Marketing entregou: 425 leads · 120 qualificados · 50 agendamentos · R$ 62,92 por qualificado
 ```
 
-## Resultado esperado
-
-Cerca de **3,75 h de trabalho do assessor por cliente por semana**, contra ~7,6 h sem o sistema. Isso permite atender **~10 clientes por assessor** sem perder a qualidade do relacionamento ([modelo operacional](docs/modelo-operacional.md) §5).
-
-## Situação atual
-
-A base de código está pronta e testada: ficha validada de cada cliente e de cada oferta, cálculo de metas, raio-x do funil, conversão real para Meta e Google, regras do freio e a API que o n8n chama. Para entrar em operação falta subir o servidor autohospedado do n8n e montar os fluxos de cada material, na ordem descrita no [roadmap](docs/roadmap.md).
-
-## Documentação
-
-| Documento | Conteúdo |
-|---|---|
-| [docs/ecossistema.md](docs/ecossistema.md) | O que é do sistema, do assessor e das ferramentas paralelas — e o que as paralelas precisam entregar |
-| [docs/modelo-operacional.md](docs/modelo-operacional.md) | O cargo de assessor item por item, o material de cada compromisso, capacidade, freio |
-| [docs/raio-x-do-funil.md](docs/raio-x-do-funil.md) | Funil padrão, perdas por categoria, maior vazamento, marketing × comercial, padrão no Kommo |
-| [docs/metricas.md](docs/metricas.md) | Dicionário de métricas da Trilha: definição e fórmula de cada número |
-| [docs/origem-dos-padroes.md](docs/origem-dos-padroes.md) | De que repositório da operação veio cada padrão |
-| [docs/roadmap.md](docs/roadmap.md) | O que está pronto e o que falta para entrar em operação |
-| [docs/arquitetura/](docs/arquitetura/) | Núcleo, Meta Ads e Google Ads |
-| [docs/integracoes/](docs/integracoes/) | n8n, Kommo, ClickUp e demais ferramentas |
-| [docs/decisoes/](docs/decisoes/) | Decisões de arquitetura |
-
-## Uso técnico
+## Como usar
 
 ```bash
-pip install -e .
+pip install -e .        # editável: o sistema lê os playbooks da pasta do repositório
 
 python -m trilha validar clientes/_exemplo/perfil.yaml      # confere a ficha de um cliente
-python -m trilha calcular clientes/_exemplo/perfil.yaml     # CAC, CPL máximos e verba por etapa
+python -m trilha calcular clientes/_exemplo/perfil.yaml     # CAC, CPL máximos e verba por degrau
 python -m trilha raio-x tests/fixtures/funil_leads.json \
   --perfil clientes/_exemplo/perfil.yaml --investimento 7550 # raio-x do funil
 python -m trilha simular-webhook tests/fixtures/kommo_webhook.txt \
   --perfil clientes/_exemplo/perfil.yaml \
   --lead tests/fixtures/kommo_lead.json --contato tests/fixtures/kommo_contato.json   # o que seria enviado, sem enviar
-python -m trilha servir --porta 8080                        # API chamada pelo n8n (exige TRILHA_API_TOKEN)
-
-python -m unittest discover -s tests -v
+TRILHA_CLIENTES_DIR=../Trilha-clientes/ads python -m trilha servir --porta 8080      # API do n8n (exige TRILHA_API_TOKEN)
 ```
+
+Clientes reais ficam no repositório privado Trilha-clientes, pasta `ads/<id>/` ([ADR-004](docs/decisoes/004-dados-de-clientes.md)). Segredos: copie `.env.example` para `.env` (uso local) ou `infra/.env.example` e `infra/kommo.env.example` (servidor). Nenhum `.env` é versionado.
 
 ## Estrutura
 
 ```
-trilha/            código (API, CLI, regras, integrações)
-tests/             testes
+trilha/            código: API, CLI, regras, integrações
+tests/             testes (unittest) e fixtures
 docs/              documentação
-n8n/modelos/       fluxos-modelo do n8n
+n8n/modelos/       fluxos-modelo do n8n (W01, W10)
 infra/             servidor: Docker, n8n, Postgres, Redis, HTTPS, backup
 playbooks/         funil padrão (todos os segmentos) e padrões do imobiliário
-clientes/_exemplo/ ficha de cliente de exemplo — clientes reais ficam em repositório privado
+clientes/_exemplo/ ficha de cliente de exemplo; clientes reais ficam no Trilha-clientes
 ```
 
-Segredos: copiar `.env.example` para `.env` (uso local) ou `infra/.env.example` e `infra/kommo.env.example` (servidor). Nenhum `.env` é versionado.
+## Documentação
+
+| Documento | Conteúdo |
+|---|---|
+| [ecossistema](docs/ecossistema.md) | o que é deste sistema, do assessor e das outras ferramentas, e o que cada uma precisa entregar |
+| [roadmap](docs/roadmap.md) | o que está pronto e o que falta para entrar em operação |
+| [modelo operacional](docs/modelo-operacional.md) | o cargo de assessor item por item, o material de cada compromisso, capacidade |
+| [raio-x do funil](docs/raio-x-do-funil.md) | funil padrão, perdas por categoria, maior vazamento, marketing × comercial |
+| [métricas](docs/metricas.md) | dicionário de métricas da Trilha: definição e fórmula de cada número |
+| [arquitetura](docs/arquitetura/) | núcleo, Meta Ads e Google Ads |
+| [integrações](docs/integracoes/) | n8n, Kommo, ClickUp e demais ferramentas |
+| [decisões](docs/decisoes/) | por que as coisas são como são |
+| [mudanças](CHANGELOG.md) | o que mudou em cada versão |
+
+## Testes
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+A CI roda os testes, o `validar` do exemplo e confere os fluxos do n8n a cada push.

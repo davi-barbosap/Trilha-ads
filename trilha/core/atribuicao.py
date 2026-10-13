@@ -1,4 +1,4 @@
-"""Canal de origem do lead, na régua da Trilha (portado de mensuracao-ibr/ibr_normalize.py).
+"""Canal de origem do lead, na régua da Trilha (portado do painel de mensuração da operação).
 
 O campo "Origem" do CRM chega escrito de muitas formas ('Meta+Ads', 'Facebook',
 'instagram', 'google', 'Fonte: Busca Paga | google', '(referral)', 'unknown'…).

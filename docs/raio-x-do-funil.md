@@ -92,7 +92,7 @@ A referência vem do playbook do segmento. Segmento sem referência compara com 
 
 ## Atribuição pelo Kommo
 
-Em ciclos longos a venda acontece muito depois do clique, fora da janela de atribuição das plataformas. A janela do Google para conversões offline é de até 90 dias; acima disso, o sistema não envia e registra o motivo. O raio-x atribui vendas à campanha e ao criativo gravados no próprio lead (UTMs no Kommo), então **nenhuma venda se perde no relatório**, esteja ou não na janela da plataforma.
+Em ciclos longos a venda acontece muito depois do clique, fora da janela de atribuição das plataformas. A janela do Google para conversões offline é de até 90 dias; acima disso, o sistema não envia e registra o motivo. O raio-x atribui vendas à campanha gravada no próprio lead (UTMs no Kommo), então **nenhuma venda se perde no relatório**, esteja ou não na janela da plataforma. A atribuição por criativo (o código da célula em `utm_content`) ainda não está implementada: está no [roadmap](roadmap.md).
 
 ## Time comercial do cliente ≠ assessor
 
@@ -125,4 +125,4 @@ Detalhes em [Kommo](integracoes/kommo.md). Correções confirmadas com o cliente
 python -m trilha raio-x tests/fixtures/funil_leads.json --perfil clientes/_exemplo/perfil.yaml --investimento 7550
 ```
 
-O exemplo reproduz um caso real da Trilha: R$ 7.550 investidos, 425 leads, 4 vendas, R$ 7.084.000 em VGV. As etapas do meio são ilustrativas.
+O exemplo usa os números de um cliente do imobiliário da operação, sem identificação: R$ 7.550 investidos, 425 leads, 4 vendas, R$ 7.084.000 em VGV. As etapas do meio são ilustrativas.

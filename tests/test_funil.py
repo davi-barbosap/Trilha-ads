@@ -12,7 +12,7 @@ T0 = datetime(2026, 9, 1, 9, tzinfo=timezone.utc)
 
 
 class TestRaioX(unittest.TestCase):
-    """Caso da Trilha: R$ 7.550 investidos, 425 leads, 4 vendas, R$ 7.084.000 em VGV."""
+    """Cliente do imobiliário da operação, sem identificação: R$ 7.550 investidos, 425 leads, 4 vendas, R$ 7.084.000 em VGV."""
 
     @classmethod
     def setUpClass(cls):
