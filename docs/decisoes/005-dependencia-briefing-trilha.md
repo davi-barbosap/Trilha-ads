@@ -1,6 +1,6 @@
 # ADR-005 — Dependência do briefing-trilha
 
-**Status:** proposta — precisa do acordo da responsável pelo repositório `beatriz-moraes082/briefing-trilha`
+**Status:** proposta — precisa do acordo da responsável pelo repositório `briefing-trilha`
 
 ## Contexto
 O wizard de onboarding (Streamlit), o `build_kommo_json.py`, os textos de objeções/apelos e o playbook imobiliário vêm do `briefing-trilha`, um repositório de outra pessoa. Sem regra, uma mudança lá quebra o onboarding aqui sem aviso.

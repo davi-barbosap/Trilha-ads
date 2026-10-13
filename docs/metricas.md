@@ -1,6 +1,6 @@
 # Dicionário de métricas da Trilha
 
-> Fonte: leitura completa dos repositórios da operação (`mensuracao-ibr`, `mensuracao-mme`, `trilha-painel`, `ranking-corretores-lion`, `ni-report`, `maia-dash`, `bossa-site`, `briefing-trilha`). Ver [origem dos padrões](origem-dos-padroes.md).
+> Fonte: leitura completa dos repositórios da operação (painéis de mensuração, painel de saúde da carteira, ranking de corretores, relatórios comerciais, landing pages e `briefing-trilha`; ver [origem dos padrões](origem-dos-padroes.md)). Ver [origem dos padrões](origem-dos-padroes.md).
 > Implementação: `trilha/core/funil.py` (raio-x), `trilha/core/atribuicao.py` (canal), `trilha/core/saude.py` (contas), `trilha/core/periodo.py` (comparações), `trilha/core/correcoes.py` (correções confirmadas).
 
 Todo número que o sistema mostra (dossiê, relatório, pacote da reunião, painel) segue estas definições. Painel de cliente que usa outra regra precisa ser alinhado a esta. Se um cliente exigir outra régua, ela vira um campo explícito do perfil, nunca uma divergência silenciosa.
@@ -72,7 +72,7 @@ Canais sem gasto medido (orgânico, indicação, não rastreado) ficam com custo
 
 | Métrica | Definição |
 |---|---|
-| **Lead score** | Classificação feita pelo bot ou pela régua do CRM do cliente. A escala é do cliente e varia (régua A–D no IMR, campo A–F no Kommo do IMR, A–E com "Revisar" no IBR). O sistema lê o score gravado, não recalcula. Quando o fechamento reavalia, vale o score final. O funil por score é em coorte e mostra **"sem score"** como grupo visível. |
+| **Lead score** | Classificação feita pelo bot ou pela régua do CRM do cliente. A escala é do cliente e varia (ex.: régua A–D num cliente, campo A–F no Kommo do mesmo cliente, A–E com "Revisar" em outro). O sistema lê o score gravado, não recalcula. Quando o fechamento reavalia, vale o score final. O funil por score é em coorte e mostra **"sem score"** como grupo visível. |
 
 ## Períodos e comparações
 
@@ -82,7 +82,7 @@ Canais sem gasto medido (orgânico, indicação, não rastreado) ficam com custo
 - **Eventos datados:** reunião pela data em que aconteceu, venda pela data de fechamento. O raio-x de safra (leads que entraram no período) e os indicadores do período (eventos que aconteceram no período) são leituras diferentes e aparecem identificadas.
 - **Janela que começa antes da primeira mídia veiculada:** métricas financeiras com ressalva (CPL e CAC subestimados, retorno superestimado).
 - **Períodos com apagão de rastreio** ficam fora do comparativo de CPL (mediriam o rastreio, não a mídia), mas os leads seguem contados.
-- **Metas do cliente:** cada meta declara a base. "Agendamento 40%" do IMR é agendados ÷ **leads**; o raio-x calcula cada passagem sobre a etapa anterior. Comparar sem dizer a base é erro.
+- **Metas do cliente:** cada meta declara a base. Uma meta de "agendamento 40%" pode ser agendados ÷ **leads**; o raio-x calcula cada passagem sobre a etapa anterior. Comparar sem dizer a base é erro.
 
 ## Correções confirmadas
 

@@ -4,7 +4,7 @@
 > Este documento reúne tudo o que é **comum a todas as plataformas**: estratégia, onboarding, perfil do cliente, brand kit, playbooks de segmento, conversão real, motores estatísticos, governança.
 > Módulos específicos: [Meta Ads](meta-ads.md) · [Google Ads](google-ads.md)
 > Status de implantação: [roadmap](../roadmap.md) · Métricas: [dicionário](../metricas.md) · Decisões: [`docs/decisoes/`](../decisoes/) · Integrações: [`docs/integracoes/`](../integracoes/)
-> Fonte do modelo de briefing de oferta e do playbook imobiliário: [`briefing-trilha`](https://github.com/beatriz-moraes082/briefing-trilha) — dependência formalizada em [ADR-005](../decisoes/005-dependencia-briefing-trilha.md).
+> Fonte do modelo de briefing de oferta e do playbook imobiliário: `briefing-trilha` (repositório da operação) — dependência formalizada em [ADR-005](../decisoes/005-dependencia-briefing-trilha.md).
 
 ## 1. Princípios
 

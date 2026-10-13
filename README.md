@@ -69,6 +69,7 @@ A base de código está pronta e testada: ficha validada de cada cliente e de ca
 | [docs/metricas.md](docs/metricas.md) | Dicionário de métricas da Trilha: definição e fórmula de cada número |
 | [docs/origem-dos-padroes.md](docs/origem-dos-padroes.md) | De que repositório da operação veio cada padrão |
 | [docs/roadmap.md](docs/roadmap.md) | O que está pronto e o que falta para entrar em operação |
+| [playbooks/README.md](playbooks/README.md) | Segmentos atendidos pela Trilha, o que cada um precisa para ter playbook próprio |
 | [docs/arquitetura/](docs/arquitetura/) | Núcleo, Meta Ads e Google Ads |
 | [docs/integracoes/](docs/integracoes/) | n8n, Kommo, ClickUp e demais ferramentas |
 | [docs/decisoes/](docs/decisoes/) | Decisões de arquitetura |

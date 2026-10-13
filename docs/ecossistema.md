@@ -42,13 +42,13 @@ Mudou uma etapa no Kommo, um campo oculto da página ou o fluxo do BotConversa? 
 
 | Ferramenta (repositório) | Relação com este sistema |
 |---|---|
-| Painéis de mensuração por cliente (`mensuracao-ibr`, `mensuracao-mme`, `maia-dash`, `ni-report`, `*-report`) | camada de relatório publicada para o cliente; devem seguir o mesmo [dicionário de métricas](metricas.md) para os números baterem |
-| Painel de saúde da carteira (`trilha-painel`) | mesma função do painel da carteira; as regras de saúde das contas foram trazidas para cá (`saude.py`) |
-| Ranking de corretores (`ranking-corretores-lion`) | painel de TV para o cliente; usa as mesmas ideias de leads parados e perfil comparativo |
-| Rotinas de tags no Kommo (estado do bot, `Interagiu`) | automação de CRM (GitHub Actions do IBR e do IMR, com simulação antes de gravar e log para desfazer); o raio-x lê as tags com os nomes reais ([Kommo](integracoes/kommo.md) §3.2) |
-| Salesbots e fluxos do pré-atendimento (`briefing-trilha`, `mensuracao-mme/bot-flows`) | aplicam as tags e etapas que o raio-x lê (Interesse Confirmado, lead frio, não-cadastrou, reativado, bot-*) |
-| Disparos (Mailchimp no IMR) | disparo em massa; fora do escopo |
-| Landing pages (`bossa-site`, LPs do `mensuracao-mme`) | o `bossa-site` cumpre a captura (UTMs, `gclid`, `gbraid`, `wbraid`, `fbclid`, esquema fixo, `generate_lead` só após o webhook confirmar). A regra real é "o último clique com campanha na sessão vence, e a navegação orgânica depois não apaga", guardada em `sessionStorage` (não atravessa sessões). Faltam `event_id` compartilhado, código de criativo no WhatsApp e Consent Mode. As LPs do IMR não gravam identificadores de clique nem UTMs em campo próprio, e duas versões antigas não enviam o lead a lugar nenhum |
+| Painéis de mensuração e relatórios por cliente | camada de relatório publicada para o cliente; devem seguir o mesmo [dicionário de métricas](metricas.md) para os números baterem |
+| Painel de saúde da carteira | mesma função do painel da carteira; as regras de saúde das contas foram trazidas para cá (`saude.py`) |
+| Ranking de corretores | painel de TV para o cliente; usa as mesmas ideias de leads parados e perfil comparativo |
+| Rotinas de tags no Kommo (estado do bot, `Interagiu`) | automação de CRM (GitHub Actions por cliente, com simulação antes de gravar e log para desfazer); o raio-x lê as tags com os nomes reais ([Kommo](integracoes/kommo.md) §3.2) |
+| Salesbots e fluxos do pré-atendimento (`briefing-trilha` e fluxos por cliente) | aplicam as tags e etapas que o raio-x lê (Interesse Confirmado, lead frio, não-cadastrou, reativado, bot-*) |
+| Disparos (Mailchimp) | disparo em massa; fora do escopo |
+| Landing pages ([Trilha-LP](https://github.com/davi-barbosap/Trilha-LP) e páginas anteriores feitas por cliente) | a Trilha-LP cumpre o contrato inteiro ([contrato](https://github.com/davi-barbosap/Trilha-LP/blob/main/docs/contrato.md)). Das páginas anteriores, a melhor cumpre a captura (UTMs, `gclid`, `gbraid`, `wbraid`, `fbclid`, esquema fixo, `generate_lead` só após o webhook confirmar). A regra real é "o último clique com campanha na sessão vence, e a navegação orgânica depois não apaga", guardada em `sessionStorage` (não atravessa sessões). Faltam `event_id` compartilhado, código de criativo no WhatsApp e Consent Mode. Há páginas antigas que não gravam identificadores de clique nem UTMs em campo próprio, ou nem enviam o lead: devem ser trocadas por páginas da Trilha-LP antes de receber verba |
 | Briefing (`briefing-trilha`) | onboarding da oferta e fluxos do Kommo ([ADR-005](decisoes/005-dependencia-briefing-trilha.md)) |
 
 Origem detalhada de cada padrão: [origem dos padrões](origem-dos-padroes.md).

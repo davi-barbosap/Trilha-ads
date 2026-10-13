@@ -1,4 +1,4 @@
-"""Padrões da leitura completa dos repositórios da operação (briefing-trilha, IBR, IMR, painel, Lion, NI, Maia, Bossa)."""
+"""Padrões da leitura completa dos repositórios da operação (briefing-trilha, painéis e relatórios por cliente, painel da carteira, landing page; ver docs/origem-dos-padroes.md)."""
 
 import unittest
 from datetime import date, datetime, timedelta, timezone

@@ -1,4 +1,4 @@
-"""Saúde das contas de anúncio (portado de trilha-painel/build.py).
+"""Saúde das contas de anúncio (portado do painel de saúde da carteira).
 
 Contas pré-pagas param de entregar quando o saldo acaba, sem que a campanha tenha
 qualquer problema. O sistema projeta quantos dias de saldo restam pela queima dos

@@ -99,7 +99,7 @@ Definições em [métricas](metricas.md). Sai como documento ou slides para o as
 
 ### 3.5 Alinhamento com a equipe
 
-**Painel da carteira**, na véspera da reunião de equipe: semáforo por cliente (dentro da meta · atenção · crítico), **saúde das contas de anúncio** (status, dias de saldo pré-pago e recarga sugerida, anúncios com problema — P1 resolver hoje, P2 esta semana; um cliente pode ter várias contas), maior vazamento de cada cliente, leads parados (janela fixa de 45 dias), freio acionado na semana, tarefas atrasadas por pessoa e criativos pendentes (lidos do ClickUp), tokens de integração perto de vencer. Alertas de conta são do assessor; alertas técnicos (credencial recusada, conta fora do acesso, coleta ou material sem atualizar, coleta com zero leads quando o período anterior teve) são do responsável técnico. O painel confere o conteúdo, não só se o fluxo rodou: o painel antigo mostrava verde com zero leads e Meta vazio, e um token quebrado virava 23 avisos separados.
+**Painel da carteira**, na véspera da reunião de equipe: semáforo por cliente (dentro da meta · atenção · crítico), **saúde das contas de anúncio** (status, dias de saldo pré-pago e recarga sugerida, anúncios com problema — P1 resolver hoje, P2 esta semana; um cliente pode ter várias contas), maior vazamento de cada cliente, leads parados (janela fixa de 45 dias), freio acionado na semana, tarefas atrasadas por pessoa e criativos pendentes (lidos do ClickUp), tokens de integração perto de vencer. Alertas de conta são do assessor; alertas técnicos (credencial recusada, conta fora do acesso, coleta ou material sem atualizar, coleta com zero leads quando o período anterior teve) são do responsável técnico. O painel confere o conteúdo, não só se o fluxo rodou: um painel que só olha se o fluxo rodou mostra verde com zero leads e Meta vazio, e um token quebrado vira dezenas de avisos separados.
 
 ## 4. Freio de emergência
 
@@ -135,7 +135,7 @@ Horas do assessor por cliente por semana:
 - **8 clientes ≈ 30 h por semana** com o sistema, contra ~60 h sem ele.
 - **Teto saudável: cerca de 10 clientes por assessor.** O sistema corta o trabalho de levantar e organizar dados; o relacionamento e a execução criativa continuam tomando tempo, e é assim que deve ser.
 - Estimativas de partida, a confirmar com as horas medidas no cliente piloto.
-- A carteira de hoje (catálogo do `trilha-painel`): 23 clientes em dois assessores, um com 16 e outro com 7 (imobiliário 17, automotivo 3, hotelaria 3). O assessor com 16 está acima do teto mesmo com o sistema.
+- A distribuição da carteira entre assessores deve respeitar esse teto: quem passa de ~10 clientes perde qualidade mesmo com o sistema.
 
 ## 6. Agenda de referência para 8 clientes
 

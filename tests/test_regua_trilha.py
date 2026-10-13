@@ -1,4 +1,4 @@
-"""Regras canônicas da Trilha extraídas dos repositórios de mensuração (IBR, IMR, Lion, NI)."""
+"""Regras canônicas da Trilha extraídas dos painéis de mensuração por cliente (ver docs/origem-dos-padroes.md)."""
 
 import unittest
 from datetime import datetime, timedelta, timezone
